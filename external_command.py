@@ -465,7 +465,7 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
         return result
 
     def run(self, edit, executable, source, through, destination):
-        """ Invoked `executable` as specified by the three last parameters.
+        """ Invoke `executable` as specified by the three last parameters.
 
         In case of error(s), write an error message to the status bar.
 
