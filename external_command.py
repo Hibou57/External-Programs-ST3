@@ -120,7 +120,7 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
         }
     }
 
-    Value parameter values:
+    Valid parameter values:
 
      * `executable`: [string] name or path to the program.
      * `source`: [enum] "selected_text" | "file_name" | "nothing"
