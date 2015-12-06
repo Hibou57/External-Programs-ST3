@@ -222,7 +222,7 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
     def get_file_name(self):
         """ Return the simple file name of the active file or `None`.
 
-        If there is no active file for the active window, additionally to
+        If there is no active file for the active view, additionally to
         returning `None`, display an error message in the status bar.
 
         This is to be the argument passed to the invoked program, when
@@ -351,7 +351,7 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
         are strings content returned by the program on these streams and
         `return_code` is the integer status returned by the program. If an
         error occurs (not from the program), the method returns both `stdout`
-        and `stderr` set to `None`, however, `stderr` is still a string, as
+        and `return_code` set to `None`, however, `stderr` is still a string, as
         indeed, if the program was stopped due to a time-out, it may have sent
         something to `stderr` (however, `stdout` is then to be ignored, and
         that's why it is set to `None`).
