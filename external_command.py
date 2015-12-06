@@ -391,7 +391,7 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
             return stderr
 
         def invok_using_stdin(text):
-            """ Invoked the program with `text` passed through its `stdin`.
+            """ Invoke the program with `text` passed through its `stdin`.
 
             Return `(stdout, stderr, return_code)`.
 
@@ -411,7 +411,7 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
             return result
 
         def invok_using_single_argument(text):
-            """ Invoked the program with `text` passed as a single argument.
+            """ Invoke the program with `text` passed as a single argument.
 
             Return `(stdout, stderr, return_code)`.
 
@@ -431,7 +431,7 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
             return result
 
         def invok_using_nothing():
-            """ Invoked the program with nothing (no argument, no input).
+            """ Invoke the program with nothing (no argument, no input).
 
             Return `(stdout, stderr, return_code)`.
 
