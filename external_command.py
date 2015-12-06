@@ -10,8 +10,6 @@ Limitations:
 
  * the `file_regex` argument passed to `exec` by `build_like`, is statically
    defined.
- * the output panel and error panel used by `external_command`, is never
-   erased and always accumulates.
 
 """
 
@@ -20,6 +18,9 @@ import sublime
 import sublime_plugin
 import subprocess
 
+
+# Build_Like
+# ============================================================================
 
 class BuildLikeCommand(sublime_plugin.WindowCommand):
 
@@ -87,6 +88,9 @@ class BuildLikeCommand(sublime_plugin.WindowCommand):
             "a single argument.")
 
 
+# External_Command
+# ============================================================================
+
 class ExternalCommandCommand(sublime_plugin.TextCommand):
     """ Full integration of external program, mainly as text command.
 
@@ -103,7 +107,7 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
     the program either: as a single parameter or written to its standard
     input.
 
-    Error stream from the program, is displayed back in an error output panel, 
+    Error stream from the program, is displayed back in an error output panel,
     named `output.errors`. Other error messages go to the status bar.
 
 
@@ -117,6 +121,7 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
             "source": "selected_text",
             "through": "stdin",
             "destination": "insert_replace",
+            "panels": "reset"
         }
     }
 
@@ -126,8 +131,12 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
      * `source`: [enum] "selected_text" | "file_name" | "nothing"
      * `through`: [enum] "stdin" | "single_argument" | "nothing"
      * `destination`: [enum] "insert_replace" | "output_panel"
+     * `panels`: [enum] "reset" (default) | "accumulate"
 
-    All parameters are required.
+    All parameters but `panels` are required.
+
+    `accumulate` means new content to the output and errors panel, is appended
+    to their previous content.
 
     Note: for `file_name` the simple file name is passed (base name with
     extension), and the working directory is that of the file.
@@ -143,6 +152,9 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
     def __init__(self, arg2):
         """ Just invoke the parent class constructor. """
         super().__init__(arg2)
+
+    # Panels
+    # ------------------------------------------------------------------------
 
     def errors_panel(self):
         """ Return the single instance of the panel for errors output.
@@ -186,38 +198,31 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
             "show_panel",
             {"panel": "output.%s" % cls.ERRORS_NAME})
 
-    def get_working_directory(self):
-        """ Return the directory of the active file or `None`.
+    @staticmethod
+    def erase_view_content(view):
+        """ Erase all text in `view`. """
+        region = sublime.Region(0, view.size())
+        view.sel().add(region)
+        view.run_command("insert", {"characters": ""})
 
-        This is the directory to be used as the working directory of the
-        invoked program.
+    def setup_panels(self, panels):
+        """ Handle the `panels` argument to `external_command`.
 
-        """
-        result = None
-        view = self.view
-        file = view.file_name()
-        if file is not None:
-            result = os.path.split(file)[0]
-        return result
-
-    def get_output_panel_writer(self):
-        """ Return a method to write to the output panel.
-
-        The method returned expects a single `text` argument.
-
-        This is the method to be used when `destination` is `output_panel`.
+        If the `panels` value is invalid, don't treat as error,
+        and use the default instead (`reset`).
 
         """
-        cls = type(self)
-        output_panel = self.output_panel()
-        window = self.view.window()
-        window.run_command(
-            "show_panel",
-            {"panel": "output.%s" % cls.OUTPUT_NAME})
-        result = lambda text: output_panel.run_command(
-            "insert",
-            {"characters": text})
-        return result
+        if panels == "accumulate":
+            # Keep their content
+            pass
+        else:
+            self.erase_view_content(self.output_panel())
+            self.erase_view_content(self.errors_panel())
+
+    # See also `get_output_panel_writer`.
+
+    # Input (text content passed to invoked program)
+    # ------------------------------------------------------------------------
 
     def get_file_name(self):
         """ Return the simple file name of the active file or `None`.
@@ -258,11 +263,36 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
             sublime.status_message("Error: multiple selections")
         else:
             region = sel[0]
-            if region.a >= region.b:
+            if region.a == region.b:  # Not `a >= b` (reversed region).
                 sublime.status_message("Error: empty selection")
             else:
                 result = view.substr(region)
         return result
+
+    def get_input(self, source):
+        """ Return the text to be passed to the program or `None`.
+
+        If `source` is unknown, additionally to returning `None`, display an
+        error message in the status bar.
+
+        This method handles the `source` argument to `external_command`.
+
+        """
+        result = None
+        if source == "selected_text":
+            result = self.get_selected_text()
+        elif source == "file_name":
+            result = self.get_file_name()
+        elif source == "nothing":
+            result = ""
+        else:
+            sublime.status_message(
+                "Error: unknown source `%s`"
+                % source)
+        return result
+
+    # Output (how to write text returned by invoked program)
+    # ------------------------------------------------------------------------
 
     def get_insert_replace_writer(self, edit):
         """ Return a method to write to the current selection or `None`.
@@ -289,26 +319,26 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
             result = lambda text: view.replace(edit, region, text)
         return result
 
-    def get_input(self, source):
-        """ Return the text to be passed to the program or `None`.
+    def get_output_panel_writer(self):
+        """ Return a method to write to the output panel.
 
-        If `source` is unknown, additionally to returning `None`, display an
-        error message in the status bar.
+        The method returned expects a single `text` argument.
 
-        This method handles the `source` argument to `external_command`.
+        This is the method to be used when `destination` is `output_panel`.
 
         """
-        result = None
-        if source == "selected_text":
-            result = self.get_selected_text()
-        elif source == "file_name":
-            result = self.get_file_name()
-        elif source == "nothing":
-            result = ""
-        else:
-            sublime.status_message(
-                "Error: unknown source `%s`"
-                % source)
+
+        def write_output(text):
+            """ Write `text` to the output panel and shows it. """
+            cls = type(self)
+            output_panel = self.output_panel()
+            window = self.view.window()
+            output_panel.run_command("insert", {"characters": text})
+            window.run_command(
+                "show_panel",
+                {"panel": "output.%s" % cls.OUTPUT_NAME})
+
+        result = write_output
         return result
 
     def get_output_method(self, destination, edit):
@@ -333,6 +363,23 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
                 % destination)
         return result
 
+    # Process
+    # ------------------------------------------------------------------------
+
+    def get_working_directory(self):
+        """ Return the directory of the active file or `None`.
+
+        This is the directory to be used as the working directory of the
+        invoked program.
+
+        """
+        result = None
+        view = self.view
+        file = view.file_name()
+        if file is not None:
+            result = os.path.split(file)[0]
+        return result
+
     @staticmethod
     def get_invokation_method(executable, directory, through):
         """ Return the method to invoke the program or `None`.
@@ -351,15 +398,17 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
         are strings content returned by the program on these streams and
         `return_code` is the integer status returned by the program. If an
         error occurs (not from the program), the method returns both `stdout`
-        and `return_code` set to `None`, however, `stderr` is still a string, as
-        indeed, if the program was stopped due to a time-out, it may have sent
-        something to `stderr` (however, `stdout` is then to be ignored, and
-        that's why it is set to `None`).
+        and `return_code` set to `None`, however, `stderr` is still a string,
+        as indeed, if the program was stopped due to a time-out, it may have
+        sent something to `stderr` (however, `stdout` is then to be ignored,
+        and that's why it is set to `None`).
 
         In case of error, the method returned, will write an error message to
         the status bar.
 
         """
+
+        # ### Exception handling
 
         def on_error(error, process):
             """ Handle `OSError` and `TimeoutExpired`, returning `stderr`.
@@ -384,11 +433,13 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
                 sublime.status_message(
                     "Error: `%s` takes too long"
                     % executable)
-            except:  # pylint: disable=broad-except
+            except:  # pylint: disable=bare-except
                 sublime.status_message(
                     "Unknown error while attempting to run `%s`"
                     % executable)
             return stderr
+
+        # ### Methods
 
         def invok_using_stdin(text):
             """ Invoke the program with `text` passed through its `stdin`.
@@ -450,6 +501,8 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
                 result = (None, on_error(error, process), None)
             return result
 
+        # ### Main
+
         if through == "stdin":
             result = invok_using_stdin
         elif through == "single_argument":
@@ -464,7 +517,17 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
 
         return result
 
-    def run(self, edit, executable, source, through, destination):
+    # Main
+    # ------------------------------------------------------------------------
+
+    def run(self,
+            edit,
+            executable,
+            source,
+            through,
+            destination,
+            panels="reset"):
+
         """ Invoke `executable` as specified by the three last parameters.
 
         In case of error(s), write an error message to the status bar.
@@ -473,6 +536,7 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
 
         """
         cls = type(self)
+        self.setup_panels(panels)
         directory = self.get_working_directory()
         input = self.get_input(source)
         invok = self.get_invokation_method(executable, directory, through)
@@ -498,6 +562,6 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
     def description():
         """ Return a long sentence as a description. """
         return (
-            "Typically, run an external command receiving the current selection on "
-            "standard input and replace the current selection with what it "
-            "writes on standard output.")
+            "Typically, run an external command receiving the current "
+            "selection on standard input and replace the current selection "
+            "with what it writes on standard output.")
