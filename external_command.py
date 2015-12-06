@@ -498,6 +498,6 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
     def description():
         """ Return a long sentence as a description. """
         return (
-            "Run an external command receiving the current selection on "
+            "Typically, run an external command receiving the current selection on "
             "standard input and replace the current selection with what it "
             "writes on standard output.")
