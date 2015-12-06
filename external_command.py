@@ -22,6 +22,21 @@ import subprocess
 # Build_Like
 # ============================================================================
 
+# String enum from Sublime Text
+# ----------------------------------------------------------------------------
+S_CMD = "cmd"
+S_EXEC = "exec"
+S_FILE = "file"
+S_FILE_REGEX = "file_regex"
+S_WORKING_DIR = "working_dir"
+
+# Configurable constants
+# ----------------------------------------------------------------------------
+DEFAULT_FILE_REGEX = "^(.+):([0-9]+):() (.+)$"
+
+
+# The class
+# ----------------------------------------------------------------------------
 class BuildLikeCommand(sublime_plugin.WindowCommand):
 
     """ `WindowCommand` to run an external command on a file, using `exec`.
@@ -65,19 +80,19 @@ class BuildLikeCommand(sublime_plugin.WindowCommand):
 
         """
         variables = self.window.extract_variables()
-        if "file" not in variables:
+        if S_FILE not in variables:
             sublime.status_message("Error: no file")
         else:
-            file = variables["file"]
+            file = variables[S_FILE]
             parts = os.path.split(file)
             directory = parts[0]
             filename = parts[1]
             self.window.run_command(
-                "exec",
+                S_EXEC,
                 {
-                    "cmd": [executable, filename],
-                    "working_dir": directory,
-                    "file_regex": "^(.+):([0-9]+):() (.+)$",
+                    S_CMD: [executable, filename],
+                    S_WORKING_DIR: directory,
+                    S_FILE_REGEX: DEFAULT_FILE_REGEX,
                     })
 
     @staticmethod
@@ -91,6 +106,35 @@ class BuildLikeCommand(sublime_plugin.WindowCommand):
 # External_Command
 # ============================================================================
 
+# String enum from Sublime Text
+# ----------------------------------------------------------------------------
+S_CHARACTERS = "characters"
+S_COLOR_SCHEME = "color_scheme"
+S_INSERT = "insert"
+S_PANEL = "panel"
+S_SHOW_PANEL = "show_panel"
+
+# String enum defined for this command
+# ----------------------------------------------------------------------------
+S_ACCUMULATE = "accumulate"
+S_FILE_NAME = "file_name"
+S_INSERT_REPLACE = "insert_replace"
+S_NOTHING = "nothing"
+S_OUTPUT_PANEL = "output_panel"
+S_RESET = "reset"
+S_SELECTED_TEXT = "selected_text"
+S_SINGLE_ARGUMENT = "single_argument"
+S_STDIN = "stdin"
+
+# Configurable constants
+# ----------------------------------------------------------------------------
+TIMEOUT_DELAY = 3  # Seconds, not milliseconds.
+ERRORS_PANEL_NAME = "errors"  # Changing this, requires restart.
+OUTPUT_PANEL_NAME = "output"  # Changing this, requires restart.
+
+
+# The class
+# ----------------------------------------------------------------------------
 class ExternalCommandCommand(sublime_plugin.TextCommand):
     """ Full integration of external program, mainly as text command.
 
@@ -130,7 +174,7 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
      * `executable`: [string] name or path to the program.
      * `source`: [enum] "selected_text" | "file_name" | "nothing"
      * `through`: [enum] "stdin" | "single_argument" | "nothing"
-     * `destination`: [enum] "insert_replace" | "output_panel"
+     * `destination`: [enum] "insert_replace" | "output_panel" | "nothing"
      * `panels`: [enum] "reset" (default) | "accumulate"
 
     All parameters but `panels` are required.
@@ -145,9 +189,7 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
 
     BUSY = False
     ERRORS_PANEL = None
-    ERRORS_NAME = "errors"
     OUTPUT_PANEL = None
-    OUTPUT_NAME = "output"
 
     def __init__(self, arg2):
         """ Just invoke the parent class constructor. """
@@ -165,9 +207,9 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
         cls = type(self)
         if cls.ERRORS_PANEL is None:
             window = self.view.window()
-            cls.ERRORS_PANEL = window.create_output_panel(cls.ERRORS_NAME)
-            color_scheme = window.active_view().settings().get("color_scheme")
-            cls.ERRORS_PANEL.settings().set("color_scheme", color_scheme)
+            cls.ERRORS_PANEL = window.create_output_panel(ERRORS_PANEL_NAME)
+            color_scheme = window.active_view().settings().get(S_COLOR_SCHEME)
+            cls.ERRORS_PANEL.settings().set(S_COLOR_SCHEME, color_scheme)
 
         result = cls.ERRORS_PANEL
         return result
@@ -181,29 +223,28 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
         cls = type(self)
         if cls.OUTPUT_PANEL is None:
             window = self.view.window()
-            cls.OUTPUT_PANEL = window.create_output_panel(cls.OUTPUT_NAME)
-            color_scheme = window.active_view().settings().get("color_scheme")
-            cls.OUTPUT_PANEL.settings().set("color_scheme", color_scheme)
+            cls.OUTPUT_PANEL = window.create_output_panel(OUTPUT_PANEL_NAME)
+            color_scheme = window.active_view().settings().get(S_COLOR_SCHEME)
+            cls.OUTPUT_PANEL.settings().set(S_COLOR_SCHEME, color_scheme)
 
         result = cls.OUTPUT_PANEL
         return result
 
     def write_error(self, text):
         """ Write `text` to the errors panel and shows it. """
-        cls = type(self)
         errors_panel = self.errors_panel()
         window = self.view.window()
-        errors_panel.run_command("insert", {"characters": text})
+        errors_panel.run_command(S_INSERT, {S_CHARACTERS: text})
         window.run_command(
-            "show_panel",
-            {"panel": "output.%s" % cls.ERRORS_NAME})
+            S_SHOW_PANEL,
+            {S_PANEL: "output.%s" % ERRORS_PANEL_NAME})
 
     @staticmethod
     def erase_view_content(view):
         """ Erase all text in `view`. """
         region = sublime.Region(0, view.size())
         view.sel().add(region)
-        view.run_command("insert", {"characters": ""})
+        view.run_command(S_INSERT, {S_CHARACTERS: ""})
 
     def setup_panels(self, panels):
         """ Handle the `panels` argument to `external_command`.
@@ -212,7 +253,7 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
         and use the default instead (`reset`).
 
         """
-        if panels == "accumulate":
+        if panels == S_ACCUMULATE:
             # Keep their content
             pass
         else:
@@ -279,11 +320,11 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
 
         """
         result = None
-        if source == "selected_text":
+        if source == S_SELECTED_TEXT:
             result = self.get_selected_text()
-        elif source == "file_name":
+        elif source == S_FILE_NAME:
             result = self.get_file_name()
-        elif source == "nothing":
+        elif source == S_NOTHING:
             result = ""
         else:
             sublime.status_message(
@@ -330,15 +371,27 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
 
         def write_output(text):
             """ Write `text` to the output panel and shows it. """
-            cls = type(self)
             output_panel = self.output_panel()
             window = self.view.window()
-            output_panel.run_command("insert", {"characters": text})
+            output_panel.run_command(S_INSERT, {S_CHARACTERS: text})
             window.run_command(
-                "show_panel",
-                {"panel": "output.%s" % cls.OUTPUT_NAME})
+                S_SHOW_PANEL,
+                {S_PANEL: "output.%s" % OUTPUT_PANEL_NAME})
 
         result = write_output
+        return result
+
+    @staticmethod
+    def get_nothing_writer():
+        """ Return a method to write nothing.
+
+        The method returned expects a single `text` argument (which is
+        ignored).
+
+        This is the method to be used when `destination` is `nothing`.
+
+        """
+        result = lambda text: None
         return result
 
     def get_output_method(self, destination, edit):
@@ -353,10 +406,12 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
 
         """
         result = None
-        if destination == "insert_replace":
+        if destination == S_INSERT_REPLACE:
             result = self.get_insert_replace_writer(edit)
-        elif destination == "output_panel":
+        elif destination == S_OUTPUT_PANEL:
             result = self.get_output_panel_writer()
+        elif destination == S_NOTHING:
+            result = self.get_nothing_writer()
         else:
             sublime.status_message(
                 "Error: unknown destination `%s`"
@@ -455,7 +510,9 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE)
-                (stdout, stderr) = process.communicate(input=text, timeout=3)
+                (stdout, stderr) = process.communicate(
+                    input=text,
+                    timeout=TIMEOUT_DELAY)
                 result = (stdout, stderr, process.returncode)
             except Exception as error:  # pylint: disable=broad-except
                 result = (None, on_error(error, process), None)
@@ -475,7 +532,7 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
                     stdin=None,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE)
-                (stdout, stderr) = process.communicate(timeout=3)
+                (stdout, stderr) = process.communicate(timeout=TIMEOUT_DELAY)
                 result = (stdout, stderr, process.returncode)
             except Exception as error:  # pylint: disable=broad-except
                 result = (None, on_error(error, process), None)
@@ -495,7 +552,7 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
                     stdin=None,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE)
-                (stdout, stderr) = process.communicate(timeout=3)
+                (stdout, stderr) = process.communicate(timeout=TIMEOUT_DELAY)
                 result = (stdout, stderr, process.returncode)
             except Exception as error:  # pylint: disable=broad-except
                 result = (None, on_error(error, process), None)
@@ -503,11 +560,11 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
 
         # ### Main
 
-        if through == "stdin":
+        if through == S_STDIN:
             result = invok_using_stdin
-        elif through == "single_argument":
+        elif through == S_SINGLE_ARGUMENT:
             result = invok_using_single_argument
-        elif through == "nothing":
+        elif through == S_NOTHING:
             result = invok_using_nothing
         else:
             result = None
@@ -526,7 +583,7 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
             source,
             through,
             destination,
-            panels="reset"):
+            panels=S_RESET):
 
         """ Invoke `executable` as specified by the three last parameters.
 
@@ -536,15 +593,18 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
 
         """
         cls = type(self)
-        self.setup_panels(panels)
         directory = self.get_working_directory()
+        # Parameters interpretation begin
+        self.setup_panels(panels)
         input = self.get_input(source)
         invok = self.get_invokation_method(executable, directory, through)
         output = self.get_output_method(destination, edit)
+        # Parameters interpretation end
         if cls.BUSY:
             sublime.status_message("Error: busy")
         elif None not in [input, invok, output]:
             cls.BUSY = True
+            # Core begin
             (result, stderr, return_code) = invok(input)
             if return_code == 0:
                 output(result)
@@ -556,6 +616,7 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
             if stderr != "":
                 self.write_error(stderr)
                 self.write_error("\n")
+            # Core end
             cls.BUSY = False
 
     @staticmethod
