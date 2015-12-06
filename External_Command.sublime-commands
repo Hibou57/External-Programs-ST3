@@ -1,0 +1,12 @@
+[
+	{
+		"caption": "Command: Show Errors",
+		"command": "show_panel",
+		"args": { "panel": "output.errors" }
+	},
+	{
+		"caption": "Command: Show Output",
+		"command": "show_panel",
+		"args": { "panel": "output.output" }
+	},
+]
