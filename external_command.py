@@ -546,12 +546,12 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
         elif None not in [input, invok, output]:
             cls.BUSY = True
             (result, stderr, return_code) = invok(input)
-            if return_code != 0:
+            if return_code == 0:
+                output(result)
+            else:
                 sublime.status_message(
                     "Error: `%s` returned status %i"
                     % (executable, return_code))
-            else:
-                output(result)
 
             if stderr != "":
                 self.write_error(stderr)
