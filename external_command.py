@@ -103,8 +103,8 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
     the program either: as a single parameter or written to its standard
     input.
 
-    If there are errors, it is displayed in an error output panel, named
-    `output.errors`.
+    Error stream from the program, is displayed back in an error output panel, 
+    named `output.errors`. Other error messages go to the status bar.
 
 
     Example usage from a `*.sublime-commands` file:
