@@ -652,15 +652,15 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         # Parameters interpretation begin
         self.setup_panels(panels)
         input = self.get_input(source)
-        invok = self.get_invokation_method(executable, directory, through)
+        invoke = self.get_invokation_method(executable, directory, through)
         output = self.get_output_method(destination, edit)
         # Parameters interpretation end
         if cls.BUSY:
             sublime.status_message("Error: busy")
-        elif None not in [input, invok, output]:
+        elif None not in [input, invoke, output]:
             cls.BUSY = True
             # Core begin
-            (result, stderr, return_code) = invok(input)
+            (result, stderr, return_code) = invoke(input)
             if return_code == 0:
                 output(result)
             else:

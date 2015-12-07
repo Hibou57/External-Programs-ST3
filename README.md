@@ -147,17 +147,18 @@ file.
 Rationals
 ------------------------------------------------------------------------------
 The program invocation is purposely simple. This plug-in provides what I
-believe should be part of the core of an editor, and that's not the purpose
-of an editor to be another shell or to provide command line edition
-features. So will never be more than single argument passing or (exclusive or)
+believe should be part of the core of an editor, and that's not the purpose of
+an editor to be another shell or to provide command line edition features. So
+there never will be more than single argument passing or (exclusive or)
 passing via standard input stream.
+
 
 This plug-in is to invoke external command as external program or wrapper
 script. If one needs to run a shell inside Sublime Text, there are plug-ins
 for this purpose, and if one needs to run command interactively without
 wishing fo a shell, there exist the
 [External Command](https://packagecontrol.io/packages/External%20Command)
-plug-in, similarto this one at a very abstract level, but different enough for
+plug-in, similar to this one at a very abstract level, but different enough for
 this plug-in to have a reason to be.
 
 Future version will probably just had two new options to the list of the
