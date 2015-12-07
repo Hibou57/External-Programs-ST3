@@ -79,7 +79,7 @@ class BuildLikeCommand(sublime_plugin.WindowCommand):
 
         """
         if file_regex is None:
-            file_regex = get_default_file_regex
+            file_regex = get_default_file_regex()
         variables = self.window.extract_variables()
         if S_FILE not in variables:
             sublime.status_message("Error: no file")
