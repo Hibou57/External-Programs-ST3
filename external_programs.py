@@ -1,10 +1,11 @@
-""" Run an external program on the current file, selection or nothing.
+""" Run an external program on the current file, selection or nothing, pass
+the data to the program via a single argument, its standard input stream, or
+nothing, write back the result from the program taken from its standard output
+stream, inserted at the caret, written as a replacement of the selected text,
+to an output panel, or to nothing. Provide a work-around for `exec` from
+`*.sublime-commands` files.
 
-Two commands are defined, designed to be used from `*.sublime-commands` files:
-`build_like` (`BuildLikeCommand`, a `WindowCommand`) and `external_command`
-('ExternalCommandCommand', a `TextCommand`).
-
-For usage, see the documentation of the two individual classes.
+See [README](READEME.md).
 
 Limitations:
  * Change to the "output_panel_name" setting, requires a restart.
@@ -57,29 +58,9 @@ def get_default_file_regex():
 # ----------------------------------------------------------------------------
 class BuildLikeCommand(sublime_plugin.WindowCommand):
 
-    """ `WindowCommand` to run an external command on a file, using `exec`.
+    """ A window command to run an external command on a file, using `exec`.
 
-    The build system allows to pass a `$file` argument to external programs
-    invoked with `exec`. Defining a command using `exec` is possible from a
-    `*.sublime-commands` file, but the `$file` variable is not available in
-    this context (and is passed literally to the invoked program). That's the
-    reason why this command class was created: it invokes an external program
-    though `exec`, passing it the active file name in the active window, even
-    when used from a `*.sublime-commands` file.
-
-    The file argument is passed implicitly, as the single argument to the
-    external program.
-
-    Example usage from a `*.sublime-commands` file:
-
-        {
-            "caption": "Markdown: Preview",
-            "command": "build_like",
-            "args": { "executable": "multimarkdown-preview" },
-        }
-
-    The only required argument to `build_like`, is the executable name or full
-    path.
+    See [README](READEME.md) on section `like_build`.
 
     """
 
@@ -87,7 +68,7 @@ class BuildLikeCommand(sublime_plugin.WindowCommand):
         """ Just invoke the parent class constructor. """
         super().__init__(arg2)
 
-    def run(self, executable):
+    def run(self, executable, file_regex=None):
         """ Invoke `executable` using `exec`.
 
         If there's no active file (on disk) in the active window, display an
@@ -97,6 +78,8 @@ class BuildLikeCommand(sublime_plugin.WindowCommand):
         Note: pass a standard regular expression for `file_regex` to `exec`.
 
         """
+        if file_regex is None:
+            file_regex = get_default_file_regex
         variables = self.window.extract_variables()
         if S_FILE not in variables:
             sublime.status_message("Error: no file")
@@ -197,55 +180,10 @@ OUTPUT_PANEL_NAME = (  # Changes requires restart.
 
 # The class
 # ----------------------------------------------------------------------------
-class ExternalCommandCommand(sublime_plugin.TextCommand):
+class ExternalProgramCommand(sublime_plugin.TextCommand):
     """ Full integration of external program, mainly as text command.
 
-    External programs can be invoked with either one of these: the current
-    file name, the text content of the current selection or no argument at
-    all.
-
-    The output from the external program, taken from its standard output, can
-    go to either: replacement of the current selection, insertion at the caret
-    location (when the current selection is empty) or to an output panel named
-    `output.output`.
-
-    The argument (text in selection or file name or nothing), can be passed to
-    the program either: as a single parameter or written to its standard
-    input.
-
-    Error stream from the program, is displayed back in an error output panel,
-    named `output.errors`. Other error messages go to the status bar.
-
-
-    Example usage from a `*.sublime-commands` file:
-
-    {
-        "caption": "Text: Format",
-        "command": "external_command",
-        "args": {
-            "executable": "format-text",
-            "source": "selected_text",
-            "through": "stdin",
-            "destination": "insert_replace",
-            "panels": "reset"
-        }
-    }
-
-    Valid parameter values:
-
-     * `executable`: [string] name or path to the program.
-     * `source`: [enum] "selected_text" | "file_name" | "nothing"
-     * `through`: [enum] "stdin" | "single_argument" | "nothing"
-     * `destination`: [enum] "insert_replace" | "output_panel" | "nothing"
-     * `panels`: [enum] "reset" (default) | "accumulate"
-
-    All parameters but `panels` are required.
-
-    `accumulate` means new content to the output and errors panel, is appended
-    to their previous content.
-
-    Note: for `file_name` the simple file name is passed (base name with
-    extension), and the working directory is that of the file.
+    See [README](READEME.md) on section `external_program`.
 
     """
 
