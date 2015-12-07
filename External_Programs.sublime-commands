@@ -1,12 +1,10 @@
 [
 	{
 		"caption": "External Program: Show Errors",
-		"command": "show_panel",
-		"args": { "panel": "output.errors" }
+		"command": "external_program_show_errors",
 	},
 	{
 		"caption": "External Program: Show Output",
-		"command": "show_panel",
-		"args": { "panel": "output.output" }
+		"command": "external_program_show_output",
 	},
 ]

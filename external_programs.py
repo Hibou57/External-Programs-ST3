@@ -681,3 +681,45 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             "Typically, run an external command receiving the current "
             "selection on standard input and replace the current selection "
             "with what it writes on standard output.")
+
+
+# Helper commands
+# ----------------------------------------------------------------------------
+
+# ### `external_program_show_errors`
+
+class ExternalProgramShowErrors(sublime_plugin.WindowCommand):
+    """ Command to show the errors panel. """
+
+    def __init__(self, arg2):
+        """ Just invoke the parent class constructor. """
+        super().__init__(arg2)
+
+    def run(self):
+        """ Show the errors panel. """
+        if ExternalProgramCommand.ERRORS_PANEL is not None:
+            self.window.run_command(
+                S_SHOW_PANEL,
+                {S_PANEL: "output.%s" % ERRORS_PANEL_NAME})
+        else:
+            sublime.status_message("No errors output so far.")
+
+
+
+# ### `external_program_show_output`
+
+class ExternalProgramShowOutput(sublime_plugin.WindowCommand):
+    """ Command to show the output panel. """
+
+    def __init__(self, arg2):
+        """ Just invoke the parent class constructor. """
+        super().__init__(arg2)
+
+    def run(self):
+        """ Show the output panel. """
+        if ExternalProgramCommand.OUTPUT_PANEL is not None:
+            self.window.run_command(
+                S_SHOW_PANEL,
+                {S_PANEL: "output.%s" % OUTPUT_PANEL_NAME})
+        else:
+            sublime.status_message("No output result so far.")
