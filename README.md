@@ -207,7 +207,7 @@ script:
   use
   [External Command](https://packagecontrol.io/packages/External%20Command).
 
-They may be installed together, as their features do not overlaps (I'm
+They may be installed together, as their features do not overlap (I'm
 personally using a patched version of `External Command` along to
 `External_Programs`).
 
