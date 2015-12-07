@@ -59,6 +59,12 @@ not-expanded). This plug-in provides a way to work around this. This
 additional command is independent from the one described above.
 
 
+Installation
+------------------------------------------------------------------------------
+The plug-in is to be installed as `External_Programs`. Using another name,
+would break file references.
+
+
 The `external_program` text command
 ------------------------------------------------------------------------------
 Integration of external program with simple invocation (no complex command
