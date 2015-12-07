@@ -65,21 +65,17 @@ The `external_program` text command
 Integration of external program with simple invocation (no complex command
 line), mainly as text command.
 
-External programs can be invoked with either one of these: the current
-file name, the text content of the current selection or nothing at all.
+A part of this command's documentation is in [Summary][].
 
-The output from the external program, taken from its standard output, can
-go to either: replacement of the current selection, insertion at the caret
-location (when the current selection is empty), to an output panel named
-`output.output` or nowhere.
+Two helper commands are provided:
 
-The argument (text in selection or file name or nothing), can be passed to
-the program either: as a single parameter or written to its standard
-input.
+ * `external_program_show_errors`;
+ * `external_program_show_output`.
 
-Error stream from the program, is displayed back in an error output panel,
-named `output.errors`. Other error messages, not from the invoked program
-itself, go to the status bar.
+ Which are available from the command palette as:
+
+ * “External Program: Show Errors”;
+ * “External Program: Show Output”.
 
 ### Creating a command
 
@@ -197,7 +193,7 @@ plug-in, similar to this one at a very abstract level, but different enough
 for this plug-in to have a reason to be.
 
 Future versions will probably just add two new options to the list of the
-possible argument to pass to the program:
+possible data to pass to the program:
 
  * file as URI;
  * file as URI with a fragment and/or range identifier.
