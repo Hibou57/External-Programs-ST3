@@ -7,9 +7,8 @@ Two commands are defined, designed to be used from `*.sublime-commands` files:
 For usage, see the documentation of the two individual classes.
 
 Limitations:
-
- * the `file_regex` argument passed to `exec` by `build_like`, is statically
-   defined.
+ * Change to the "output_panel_name" setting, requires a restart.
+ * Change to the "errors_panel_name" setting, requires a restart.
 
 """
 
@@ -18,21 +17,40 @@ import sublime
 import sublime_plugin
 import subprocess
 
+SETTINGS = sublime.load_settings("External_Programs.sublime-settings")
+PREFERENCES = sublime.load_settings("Preferences.sublime-settings")
+
 
 # Build_Like
 # ============================================================================
 
-# String enum from Sublime Text
+# Default when no settings found
+# ----------------------------------------------------------------------------
+DEFAULT_FILE_REGEX = "^(.+):([0-9]+):() (.+)$"
+
+# String constants from Sublime Text
 # ----------------------------------------------------------------------------
 S_CMD = "cmd"
 S_EXEC = "exec"
 S_FILE = "file"
 S_FILE_REGEX = "file_regex"
 S_WORKING_DIR = "working_dir"
+S_DEFAULT_FILE_REGEX = "default_file_regex"
 
-# Configurable constants
+# String constants defined for this command
 # ----------------------------------------------------------------------------
-DEFAULT_FILE_REGEX = "^(.+):([0-9]+):() (.+)$"
+S_DEFAULT_REGEX = "default_file_regex"
+
+
+# Settings
+# ----------------------------------------------------------------------------
+def get_default_file_regex():
+    """ Return default file regex after settings or else a default. """
+    result = (
+        SETTINGS.get(S_DEFAULT_FILE_REGEX)
+        if SETTINGS.has(S_DEFAULT_FILE_REGEX)
+        else DEFAULT_FILE_REGEX)
+    return result
 
 
 # The class
@@ -92,7 +110,7 @@ class BuildLikeCommand(sublime_plugin.WindowCommand):
                 {
                     S_CMD: [executable, filename],
                     S_WORKING_DIR: directory,
-                    S_FILE_REGEX: DEFAULT_FILE_REGEX,
+                    S_FILE_REGEX: get_default_file_regex(),
                     })
 
     @staticmethod
@@ -106,7 +124,42 @@ class BuildLikeCommand(sublime_plugin.WindowCommand):
 # External_Command
 # ============================================================================
 
-# String enum from Sublime Text
+# Main entry point is `run`
+#
+# Settings are handle by:
+#  * `ERRORS_PANEL_NAME`
+#  * `OUTPUT_PANEL_NAME`
+#  * `update_color_scheme`
+#  * `get_timeout_delay`
+#
+# Parameters are interpreted by:
+#  * `get_output_method`     for `destination`
+#  * `get_invokation_method` for `executable`
+#  * `setup_panels`          for `panels`
+#  * `get_input`             for `source`
+#  * `get_invokation_method` for `through`
+#
+# Parameter values are handled by:
+#  * `get_insert_replace_writer`   for `destination:insert_replace`
+#  * `get_nothing_writer`          for `destination:nothing`
+#  * `get_output_panel_writer`     for `destination:output_panel`
+#  * `setup_panels` it-self        for `panels:accumulate`
+#  * `erase_view_content`          for `panels:reset`
+#  * `get_file_name`               for `source:file_name`
+#  * `get_input` it-self           for `source:nothing`
+#  * `get_selected_text`           for `source:selected_text`
+#  * `invok_using_nothing`         for `though:nothing`
+#  * `invok_using_single_argument` for `though:single_argument`
+#  * `invok_using_stdin`           for `though:stdin`
+
+# Default when no settings found
+# ----------------------------------------------------------------------------
+DEFAULT_COLOR_SCHEME = None
+DEFAULT_ERRORS_PANEL_NAME = "errors"
+DEFAULT_OUTPUT_PANEL_NAME = "output"
+DEFAULT_TIMEOUT_DELAY = 3  # Seconds, not milliseconds.
+
+# String constants from Sublime Text
 # ----------------------------------------------------------------------------
 S_CHARACTERS = "characters"
 S_COLOR_SCHEME = "color_scheme"
@@ -114,23 +167,32 @@ S_INSERT = "insert"
 S_PANEL = "panel"
 S_SHOW_PANEL = "show_panel"
 
-# String enum defined for this command
+# String constants defined for this command
 # ----------------------------------------------------------------------------
 S_ACCUMULATE = "accumulate"
+S_ERRORS_PANEL_NAME = "errors_panel_name"
 S_FILE_NAME = "file_name"
 S_INSERT_REPLACE = "insert_replace"
 S_NOTHING = "nothing"
 S_OUTPUT_PANEL = "output_panel"
+S_OUTPUT_PANEL_NAME = "output_panel_name"
 S_RESET = "reset"
 S_SELECTED_TEXT = "selected_text"
 S_SINGLE_ARGUMENT = "single_argument"
 S_STDIN = "stdin"
+S_TIMEOUT_DELAY = "timeout_delay"
 
-# Configurable constants
+# Constants from settings
 # ----------------------------------------------------------------------------
-TIMEOUT_DELAY = 3  # Seconds, not milliseconds.
-ERRORS_PANEL_NAME = "errors"  # Changing this, requires restart.
-OUTPUT_PANEL_NAME = "output"  # Changing this, requires restart.
+ERRORS_PANEL_NAME = (  # Changes requires restart.
+    SETTINGS.get(S_ERRORS_PANEL_NAME)
+    if PREFERENCES.has(S_ERRORS_PANEL_NAME)
+    else DEFAULT_ERRORS_PANEL_NAME)
+
+OUTPUT_PANEL_NAME = (  # Changes requires restart.
+    SETTINGS.get(S_OUTPUT_PANEL_NAME)
+    if PREFERENCES.has(S_OUTPUT_PANEL_NAME)
+    else DEFAULT_OUTPUT_PANEL_NAME)
 
 
 # The class
@@ -190,6 +252,8 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
     BUSY = False
     ERRORS_PANEL = None
     OUTPUT_PANEL = None
+    COLOR_SCHEME = None
+    COLOR_SCHEME_HANDLER_REGISTERED = False
 
     def __init__(self, arg2):
         """ Just invoke the parent class constructor. """
@@ -197,6 +261,48 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
 
     # Panels
     # ------------------------------------------------------------------------
+
+    # ### Color scheme
+
+    @classmethod
+    def update_color_scheme(cls):
+        """ Set `COLOR_SCHEME` after preferences.
+
+        `COLOR_SCHEME` may still be `None`.
+
+        """
+        cls.COLOR_SCHEME = (
+            PREFERENCES.get(S_COLOR_SCHEME)
+            if PREFERENCES.has(S_COLOR_SCHEME)
+            else DEFAULT_COLOR_SCHEME)
+
+    @classmethod
+    def set_panel_color_scheme(cls, panel):
+        """ Set panel color scheme to `COLOR_SCHEME`. """
+        if cls.COLOR_SCHEME is None:
+            cls.update_color_scheme()
+        if cls.COLOR_SCHEME is not None:
+            panel.settings().set(S_COLOR_SCHEME, cls.COLOR_SCHEME)
+
+    @classmethod
+    def on_color_scheme_changed(cls):
+        """ Invoke `update_color_scheme` and `set_panel_color_scheme`. """
+        cls.update_color_scheme()
+        if cls.ERRORS_PANEL is not None:
+            cls.set_panel_color_scheme(cls.ERRORS_PANEL)
+        if cls.OUTPUT_PANEL is not None:
+            cls.set_panel_color_scheme(cls.OUTPUT_PANEL)
+
+    @classmethod
+    def register_color_scheme_handler(cls):
+        """ Register `on_color_scheme_changed`. """
+        if not cls.COLOR_SCHEME_HANDLER_REGISTERED:
+            PREFERENCES.add_on_change(
+                cls.COLOR_SCHEME,
+                cls.on_color_scheme_changed)
+            cls.COLOR_SCHEME_HANDLER_REGISTERED = True
+
+    # ### Main
 
     def errors_panel(self):
         """ Return the single instance of the panel for errors output.
@@ -208,8 +314,8 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
         if cls.ERRORS_PANEL is None:
             window = self.view.window()
             cls.ERRORS_PANEL = window.create_output_panel(ERRORS_PANEL_NAME)
-            color_scheme = window.active_view().settings().get(S_COLOR_SCHEME)
-            cls.ERRORS_PANEL.settings().set(S_COLOR_SCHEME, color_scheme)
+            self.set_panel_color_scheme(cls.ERRORS_PANEL)
+            self.register_color_scheme_handler()
 
         result = cls.ERRORS_PANEL
         return result
@@ -224,8 +330,8 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
         if cls.OUTPUT_PANEL is None:
             window = self.view.window()
             cls.OUTPUT_PANEL = window.create_output_panel(OUTPUT_PANEL_NAME)
-            color_scheme = window.active_view().settings().get(S_COLOR_SCHEME)
-            cls.OUTPUT_PANEL.settings().set(S_COLOR_SCHEME, color_scheme)
+            self.set_panel_color_scheme(cls.OUTPUT_PANEL)
+            self.register_color_scheme_handler()
 
         result = cls.OUTPUT_PANEL
         return result
@@ -421,6 +527,15 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
     # Process
     # ------------------------------------------------------------------------
 
+    @staticmethod
+    def get_timeout_delay():
+        """ Return timeout delay after settings or else a default. """
+        result = (  # Changes requires restart.
+            SETTINGS.get(S_TIMEOUT_DELAY)
+            if PREFERENCES.has(S_TIMEOUT_DELAY)
+            else DEFAULT_TIMEOUT_DELAY)
+        return result
+
     def get_working_directory(self):
         """ Return the directory of the active file or `None`.
 
@@ -435,8 +550,8 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
             result = os.path.split(file)[0]
         return result
 
-    @staticmethod
-    def get_invokation_method(executable, directory, through):
+    @classmethod
+    def get_invokation_method(cls, executable, directory, through):
         """ Return the method to invoke the program or `None`.
 
         If `through` is unknown, additionally to returning `None`, display an
@@ -462,6 +577,8 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
         the status bar.
 
         """
+
+        timeout_delay = cls.get_timeout_delay()
 
         # ### Exception handling
 
@@ -512,7 +629,7 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
                     stderr=subprocess.PIPE)
                 (stdout, stderr) = process.communicate(
                     input=text,
-                    timeout=TIMEOUT_DELAY)
+                    timeout=timeout_delay)
                 result = (stdout, stderr, process.returncode)
             except Exception as error:  # pylint: disable=broad-except
                 result = (None, on_error(error, process), None)
@@ -532,7 +649,7 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
                     stdin=None,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE)
-                (stdout, stderr) = process.communicate(timeout=TIMEOUT_DELAY)
+                (stdout, stderr) = process.communicate(timeout=timeout_delay)
                 result = (stdout, stderr, process.returncode)
             except Exception as error:  # pylint: disable=broad-except
                 result = (None, on_error(error, process), None)
@@ -552,7 +669,7 @@ class ExternalCommandCommand(sublime_plugin.TextCommand):
                     stdin=None,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE)
-                (stdout, stderr) = process.communicate(timeout=TIMEOUT_DELAY)
+                (stdout, stderr) = process.communicate(timeout=timeout_delay)
                 result = (stdout, stderr, process.returncode)
             except Exception as error:  # pylint: disable=broad-except
                 result = (None, on_error(error, process), None)
