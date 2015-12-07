@@ -90,7 +90,7 @@ Example usage from a `*.sublime-commands` file:
 
 	{
 	    "caption": "Text: Format",
-	    "command": "external_command",
+	    "command": "external_program",
 	    "args": {
 	        "executable": "format-text",
 	        "source": "selected_text",
