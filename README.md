@@ -10,6 +10,7 @@ on each invocation or wish to use an interpreter from Sublime Text, xe better
 use one of the two alternatives mentioned in [Rationals][].
 
  * [Summary][]
+ * [Installation][]
  * [The `external_program` text command][]
  * [The `build_like` window command][]
  * [Rationals][]
