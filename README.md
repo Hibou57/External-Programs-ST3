@@ -188,9 +188,9 @@ Rationals
 The program invocation is purposely simple and executed synchronously. This
 plug-in provides what I believe should be part of the core of an editor, and
 that's not the purpose of an editor to be another shell or to provide command
-line edition features. So there never will be more than single argument
-passing or (exclusive or) passing via standard input stream.
-
+line edition features (that's the purpose of plug-ins). So there never will be
+more than single argument passing or (exclusive or) passing via standard input
+stream.
 
 This plug-in is to invoke external command as external program or wrapper
 script:
@@ -206,6 +206,10 @@ script:
 * If one needs to run possibly long running commands asynchronously, xe better
   use
   [External Command](https://packagecontrol.io/packages/External%20Command).
+
+They may be installed together, as their features do not overlaps (I'm
+personally using a patched version of `External Command` along to
+`External_Programs`).
 
 Future versions will probably just add two new options to the list of the
 possible data to pass to the program:
