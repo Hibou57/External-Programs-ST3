@@ -236,7 +236,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         """ Register `on_color_scheme_changed`. """
         if not cls.COLOR_SCHEME_HANDLER_REGISTERED:
             PREFERENCES.add_on_change(
-                cls.COLOR_SCHEME,
+                S_COLOR_SCHEME,
                 cls.on_color_scheme_changed)
             cls.COLOR_SCHEME_HANDLER_REGISTERED = True
 
