@@ -1,9 +1,10 @@
 
-External_Programs for Sublime Text 3
+`External_Programs` for Sublime Text 3
 ==============================================================================
 
 A plug-in for integration of external programs into Sublime Text 3, as text
 commands and window commands.
+
 
 Summary
 ------------------------------------------------------------------------------
@@ -22,13 +23,86 @@ messages, which always go to the status bar.
 Two commands are available from the command palette, to show the errors and
 output panel.
 
-Additionally provides `build_like` a convenient work-around to run a program like in a
-build system, from `*.sublime-commands` files (where you add something to the
-command palette), with the active file name as an argument: the `$file`
-variable only exists for `*.sublime-build` files, not for `*.sublime-commands`
-(the variable is left literally as-is, not-expanded). This plug-in provides a
-way to work around this. This additional command is independent from the one
-described above.
+Additionally provides `build_like` a convenient work-around to run a program
+like in a build system, from `*.sublime-commands` files (where you add
+something to the command palette), with the active file name as an argument:
+the `$file` variable only exists for `*.sublime-build` files, not for
+`*.sublime-commands` (the variable is left literally as-is, not-expanded).
+This plug-in provides a way to work around this. This additional command is
+independent from the one described above.
+
+
+The `external_program` text command
+------------------------------------------------------------------------------
+Full integration of external program, mainly as text command.
+
+External programs can be invoked with either one of these: the current
+file name, the text content of the current selection or no argument at
+all.
+
+The output from the external program, taken from its standard output, can
+go to either: replacement of the current selection, insertion at the caret
+location (when the current selection is empty), to an output panel named
+`output.output` or nowhere.
+
+The argument (text in selection or file name or nothing), can be passed to
+the program either: as a single parameter or written to its standard
+input.
+
+Error stream from the program, is displayed back in an error output panel,
+named `output.errors`. Other error messages, not from the program itself go to
+the status bar.
+
+
+Example usage from a `*.sublime-commands` file:
+
+	{
+	    "caption": "Text: Format",
+	    "command": "external_command",
+	    "args": {
+	        "executable": "format-text",
+	        "source": "selected_text",
+	        "through": "stdin",
+	        "destination": "insert_replace",
+	        "panels": "reset"
+	    }
+	}
+
+Valid parameter values:
+
+ * `destination`: [enum] `insert_replace` | `output_panel` | `nothing`
+ * `executable`: [string] name or path to the program.
+ * `panels`: [enum] `reset` (default) | `accumulate`
+ * `source`: [enum] `selected_text` | `file_name` | `nothing`
+ * `through`: [enum] `stdin` | `single_argument` | `nothing`
+
+All parameters but `panels` are required.
+
+When `panels` is `accumulate` means new content to the output and errors
+panels, is appended to their previous content.
+
+When `source` is `file_name` the simple file name is passed (base name with
+extension), and the working directory is that of the file.
+
+The command uses this settings:
+
+ * `errors_panel_name`, which defaults to `errors`
+ * `output_panel_name`, which defaults to `output`
+ * `timeout_delay`, which defaults to 3 (seconds, not milliseconds)
+
+If a setting is not found, the above default values are used.
+
+Changing the `errors_panel_name` and `output_panel_name` settings, actually
+requires a restart to apply (this may change in a future version).
+
+Notes: to display a panel using a Sublime Text Command, the panel name must
+be prefixed with `output.` (also note the dot). Ex: `output.output`, for
+the output panel or `output.errors` for the errors panel. None of these two
+panels exists before something was to be written to it.
+
+The panels are displayed using the color scheme after the corresponding
+Sublime Text preferences, and panels switch color scheme when this preference
+is changed.
 
 
 The `build_like` window command
@@ -69,70 +143,27 @@ The active file name is passed to the program, as a simple name (base name
 with extension), and the program is executed from the directory owning the
 file.
 
-The `external_program` text command
+
+Rationals
 ------------------------------------------------------------------------------
-Full integration of external program, mainly as text command.
+The program invocation is purposely simple. This plug-in provides what I
+believe should be part of the core of an editor, and that's not the purpose
+of an editor to be another shell or to provide command line edition
+features. So will never be more than single argument passing or (exclusive or)
+passing via standard input stream.
 
-External programs can be invoked with either one of these: the current
-file name, the text content of the current selection or no argument at
-all.
+This plug-in is to invoke external command as external program or wrapper
+script. If one needs to run a shell inside Sublime Text, there are plug-ins
+for this purpose, and if one needs to run command interactively without
+wishing fo a shell, there exist the
+[External Command](https://packagecontrol.io/packages/External%20Command)
+plug-in, similarto this one at a very abstract level, but different enough for
+this plug-in to have a reason to be.
 
-The output from the external program, taken from its standard output, can
-go to either: replacement of the current selection, insertion at the caret
-location (when the current selection is empty), to an output panel named
-`output.output` or nowhere.
+Future version will probably just had two new options to the list of the
+possible argument to pass to the program:
 
-The argument (text in selection or file name or nothing), can be passed to
-the program either: as a single parameter or written to its standard
-input.
-
-Error stream from the program, is displayed back in an error output panel,
-named `output.errors`. Other error messages, not from the program itself go to
-the status bar.
+ * file as URI
+ * file as URI with a fragment and/or range identifier
 
 
-Example usage from a `*.sublime-commands` file:
-
-	{
-	    "caption": "Text: Format",
-	    "command": "external_command",
-	    "args": {
-	        "executable": "format-text",
-	        "source": "selected_text",
-	        "through": "stdin",
-	        "destination": "insert_replace",
-	        "panels": "reset"
-	    }
-	}
-
-Valid parameter values:
-
- * `executable`: [string] name or path to the program.
- * `source`: [enum] "selected_text" | "file_name" | "nothing"
- * `through`: [enum] "stdin" | "single_argument" | "nothing"
- * `destination`: [enum] "insert_replace" | "output_panel" | "nothing"
- * `panels`: [enum] "reset" (default) | "accumulate"
-
-All parameters but `panels` are required.
-
-`accumulate` means new content to the output and errors panel, is appended
-to their previous content.
-
-Note: for `file_name` the simple file name is passed (base name with
-extension), and the working directory is that of the file.
-
-The command uses this settings:
-
- * `timeout_delay`, which defaults to 3 (seconds, not milliseconds)
- * `output_panel_name`, which defaults to `output`
- * `errors_panel_name`, which defaults to `errors`
-
-If a setting is not found, the above default values are used.
-
-Note: to display a panel using a Sublime Text Command, the panel name must
-be prefixed with `output.` (also note the dot). Ex: `output.output`, for
-to output panel or `output.errors` for the errors panel. None of these panel
-exists before something was to be written to it.
-
-The panels are displayed using the color scheme after Sublime Text
-preferences, are switch color scheme when the user change this preference.
