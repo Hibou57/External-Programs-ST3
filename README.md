@@ -6,9 +6,8 @@ A plug-in for integration of external programs into Sublime Text 3, as text
 commands and window commands.
 
 Program invocation *is not interactive*; if one needs to edit a command line
-on each invocation, xe better use the
-[External Command](https://packagecontrol.io/packages/External%20Command)
-package.
+on each invocation or wish to use an interpreter from Sublime Text, xe better
+use one of the two alternatives mentioned in [Rationals][].
 
  * [Summary][]
  * [The `external_program` text command][]
@@ -185,12 +184,16 @@ there never will be more than single argument passing or (exclusive or)
 passing via standard input stream.
 
 This plug-in is to invoke external command as external program or wrapper
-script. If one needs to run a shell inside Sublime Text, there are plug-ins
-for this purpose, and if one needs to run commands interactively without
-wishing for an in-editor interpreter, there exist the
-[External Command](https://packagecontrol.io/packages/External%20Command)
-plug-in, similar to this one at a very abstract level, but different enough
-for this plug-in to have a reason to be.
+script:
+
+* If one needs to run a shell or interpreter from from Sublime Text, xe better
+  use [External REPL](https://packagecontrol.io/packages/External%20REPL) for
+  this purpose.
+* If one needs to run external commands interactively without wishing for an
+  interpreter, xe better use
+  [External Command](https://packagecontrol.io/packages/External%20Command)
+  plug-in, similar to this one at a very abstract level, but different enough
+  for this plug-in to have a reason to be.
 
 Future versions will probably just add two new options to the list of the
 possible data to pass to the program:
