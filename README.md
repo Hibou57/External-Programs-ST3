@@ -5,6 +5,11 @@
 A plug-in for integration of external programs into Sublime Text 3, as text
 commands and window commands.
 
+Program invocation *is not interactive*; if one needs to edit a command line
+on each invocation, xe better use the
+[External Command](https://packagecontrol.io/packages/External%20Command)
+package.
+
  * [Summary][]
  * [The `external_program` text command][]
  * [The `build_like` window command][]
@@ -15,22 +20,22 @@ Summary
 ------------------------------------------------------------------------------
 Provides `external_program`, a command to run an external program on, either:
 
- * the current file
- * the current selection
- * nothing
+ * the current file;
+ * the current selection;
+ * nothing.
 
 Passes the data to the program via, either:
 
- * a single argument
- * its standard input stream
- * nothing (makes sense when the argument is nothing)
+ * a single argument;
+ * its standard input stream;
+ * nothing (makes sense when the argument is nothing).
 
-Writes back the result from the program taken from its standard output
-stream, either:
+Writes back the result from the program taken from its standard output,
+either:
 
- * inserted at the caret,
- * written as a replacement of the selected text
- * to an output panel
+ * inserted at the caret;
+ * as a replacement of the selected text;
+ * to an output panel;
  * to nothing.
 
 “Selection” means single selection, not multiple selections.
@@ -38,28 +43,30 @@ stream, either:
 In case of errors, messages are written to the status bar. If the invoked
 program sent text to its standard error stream, it will be displayed in an
 errors output panel. Note: this is not where the plug-in writes its own error
-messages, including the program returned status code, which always go to
-the status bar.
+messages, including the program returned status code (when non-zero), which
+always go to the status bar.
+
 
 Two commands are available from the command palette, to show the errors and
-output panel.
+output panel: “External Program: Show Errors” and “External Program: Show
+Output”.
 
 Additionally provides `build_like` a convenient work-around to run a program
 like in a build system, from `*.sublime-commands` files (where you add
 something to the command palette), with the active file name as an argument:
 the `$file` variable only exists for `*.sublime-build` files, not for
-`*.sublime-commands` (the variable is left literally as-is, not-expanded).
-This plug-in provides a way to work around this. This additional command is
-independent from the one described above.
+`*.sublime-commands` files (where the variable is left literally as-is,
+not-expanded). This plug-in provides a way to work around this. This
+additional command is independent from the one described above.
 
 
 The `external_program` text command
 ------------------------------------------------------------------------------
-Full integration of external program, mainly as text command.
+Integration of external program with simple invocation (no complex command
+line), mainly as text command.
 
 External programs can be invoked with either one of these: the current
-file name, the text content of the current selection or no argument at
-all.
+file name, the text content of the current selection or nothing at all.
 
 The output from the external program, taken from its standard output, can
 go to either: replacement of the current selection, insertion at the caret
@@ -71,9 +78,10 @@ the program either: as a single parameter or written to its standard
 input.
 
 Error stream from the program, is displayed back in an error output panel,
-named `output.errors`. Other error messages, not from the program itself go to
-the status bar.
+named `output.errors`. Other error messages, not from the invoked program
+itself, go to the status bar.
 
+### Creating a command
 
 Example usage from a `*.sublime-commands` file:
 
@@ -91,11 +99,11 @@ Example usage from a `*.sublime-commands` file:
 
 Valid parameter values:
 
- * `destination`: [enum] `insert_replace` | `output_panel` | `nothing`
- * `executable`: [string] name or path to the program.
- * `panels`: [enum] `reset` (default) | `accumulate`
- * `source`: [enum] `selected_text` | `file_name` | `nothing`
- * `through`: [enum] `stdin` | `single_argument` | `nothing`
+ * `destination`: [enum] `insert_replace` | `output_panel` | `nothing`;
+ * `executable`: [string] name or path to the program;
+ * `panels`: [enum] `reset` (default) | `accumulate`;
+ * `source`: [enum] `selected_text` | `file_name` | `nothing`;
+ * `through`: [enum] `stdin` | `single_argument` | `nothing`.
 
 All parameters but `panels` are required.
 
@@ -105,11 +113,13 @@ panels, is appended to their previous content.
 When `source` is `file_name` the simple file name is passed (base name with
 extension), and the working directory is that of the file.
 
+### Settings
+
 The command uses this settings:
 
- * `errors_panel_name`, which defaults to `errors`
- * `output_panel_name`, which defaults to `output`
- * `timeout_delay`, which defaults to 3 (seconds, not milliseconds)
+ * `errors_panel_name`, which defaults to `errors`;
+ * `output_panel_name`, which defaults to `output`;
+ * `timeout_delay`, which defaults to 3 (seconds, not milliseconds).
 
 If a setting is not found, the above default values are used.
 
@@ -143,6 +153,8 @@ it the active file name in the active window, even when used from a
 The file argument is passed implicitly, as the single argument to the
 external program.
 
+### Creating a command
+
 Example usage from a `*.sublime-commands` file:
 
     {
@@ -164,6 +176,9 @@ The active file name is passed to the program, as a simple name (base name
 with extension), and the program is executed from the directory owning the
 file.
 
+### Settings
+
+`default_file_regex`, as described above.
 
 Rationals
 ------------------------------------------------------------------------------
@@ -184,8 +199,8 @@ for this plug-in to have a reason to be.
 Future versions will probably just had two new options to the list of the
 possible argument to pass to the program:
 
- * file as URI
- * file as URI with a fragment and/or range identifier
+ * file as URI;
+ * file as URI with a fragment and/or range identifier.
 
 
 License
