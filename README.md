@@ -46,10 +46,11 @@ errors output panel. Note: this is not where the plug-in writes its own error
 messages, including the program returned status code (when non-zero), which
 always go to the status bar.
 
-
 Two commands are available from the command palette, to show the errors and
 output panel: “External Program: Show Errors” and “External Program: Show
 Output”.
+
+External programs are executed *synchronously*.
 
 Additionally provides `build_like` a convenient work-around to run a program
 like in a build system, from `*.sublime-commands` files (where you add
@@ -184,11 +185,12 @@ file.
 
 Rationals
 ------------------------------------------------------------------------------
-The program invocation is purposely simple. This plug-in provides what I
-believe should be part of the core of an editor, and that's not the purpose of
-an editor to be another shell or to provide command line edition features. So
-there never will be more than single argument passing or (exclusive or)
-passing via standard input stream.
+The program invocation is purposely simple and executed synchronously. This
+plug-in provides what I believe should be part of the core of an editor, and
+that's not the purpose of an editor to be another shell or to provide command
+line edition features. So there never will be more than single argument
+passing or (exclusive or) passing via standard input stream.
+
 
 This plug-in is to invoke external command as external program or wrapper
 script:
@@ -201,6 +203,9 @@ script:
   [External Command](https://packagecontrol.io/packages/External%20Command)
   plug-in, similar to this one at a very abstract level, but different enough
   for this plug-in to have a reason to be.
+* If one needs to run possibly long running commands asynchronously, xe better
+  use
+  [External Command](https://packagecontrol.io/packages/External%20Command).
 
 Future versions will probably just add two new options to the list of the
 possible data to pass to the program:

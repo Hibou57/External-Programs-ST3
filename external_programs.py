@@ -5,9 +5,10 @@ stream, inserted at the caret, written as a replacement of the selected text,
 to an output panel, or to nothing. Provide a work-around for `exec` from
 `*.sublime-commands` files.
 
-See [README](READEME.md).
+See [README](README.md).
 
 Limitations:
+
  * Change to the "output_panel_name" setting, requires a restart.
  * Change to the "errors_panel_name" setting, requires a restart.
 
@@ -47,10 +48,7 @@ S_DEFAULT_REGEX = "default_file_regex"
 # ----------------------------------------------------------------------------
 def get_default_file_regex():
     """ Return default file regex after settings or else a default. """
-    result = (
-        SETTINGS.get(S_DEFAULT_FILE_REGEX)
-        if SETTINGS.has(S_DEFAULT_FILE_REGEX)
-        else DEFAULT_FILE_REGEX)
+    result = SETTINGS.get(S_DEFAULT_FILE_REGEX, DEFAULT_FILE_REGEX)
     return result
 
 
@@ -60,7 +58,7 @@ class BuildLikeCommand(sublime_plugin.WindowCommand):
 
     """ A window command to run an external command on a file, using `exec`.
 
-    See [README](READEME.md) on section `like_build`.
+    See [README](README.md) on section `like_build`.
 
     """
 
@@ -167,15 +165,13 @@ S_TIMEOUT_DELAY = "timeout_delay"
 
 # Constants from settings
 # ----------------------------------------------------------------------------
-ERRORS_PANEL_NAME = (  # Changes requires restart.
-    SETTINGS.get(S_ERRORS_PANEL_NAME)
-    if PREFERENCES.has(S_ERRORS_PANEL_NAME)
-    else DEFAULT_ERRORS_PANEL_NAME)
+ERRORS_PANEL_NAME = SETTINGS.get(  # Changes requires restart.
+    S_ERRORS_PANEL_NAME,
+    DEFAULT_ERRORS_PANEL_NAME)
 
-OUTPUT_PANEL_NAME = (  # Changes requires restart.
-    SETTINGS.get(S_OUTPUT_PANEL_NAME)
-    if PREFERENCES.has(S_OUTPUT_PANEL_NAME)
-    else DEFAULT_OUTPUT_PANEL_NAME)
+OUTPUT_PANEL_NAME = SETTINGS.get(  # Changes requires restart.
+    S_OUTPUT_PANEL_NAME,
+    DEFAULT_OUTPUT_PANEL_NAME)
 
 
 # The class
@@ -183,7 +179,7 @@ OUTPUT_PANEL_NAME = (  # Changes requires restart.
 class ExternalProgramCommand(sublime_plugin.TextCommand):
     """ Full integration of external program, mainly as text command.
 
-    See [README](READEME.md) on section `external_program`.
+    See [README](README.md) on section `external_program`.
 
     """
 
@@ -209,10 +205,9 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         `COLOR_SCHEME` may still be `None`.
 
         """
-        cls.COLOR_SCHEME = (
-            PREFERENCES.get(S_COLOR_SCHEME)
-            if PREFERENCES.has(S_COLOR_SCHEME)
-            else DEFAULT_COLOR_SCHEME)
+        cls.COLOR_SCHEME = PREFERENCES.get(
+            S_COLOR_SCHEME,
+            DEFAULT_COLOR_SCHEME)
 
     @classmethod
     def set_panel_color_scheme(cls, panel):
@@ -468,10 +463,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
     @staticmethod
     def get_timeout_delay():
         """ Return timeout delay after settings or else a default. """
-        result = (  # Changes requires restart.
-            SETTINGS.get(S_TIMEOUT_DELAY)
-            if PREFERENCES.has(S_TIMEOUT_DELAY)
-            else DEFAULT_TIMEOUT_DELAY)
+        result = SETTINGS.get(S_TIMEOUT_DELAY, DEFAULT_TIMEOUT_DELAY)
         return result
 
     def get_working_directory(self):
@@ -536,7 +528,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
                     "Error: could not run `%s`"
                     % executable)
             except subprocess.TimeoutExpired as timeout:
-                stderr = timeout.stderr
+                stderr = getattr(timeout, "stderr", "")
                 process.kill()
                 (_stdout, stderr_tail) = process.communicate()
                 stderr += stderr_tail
@@ -703,7 +695,6 @@ class ExternalProgramShowErrors(sublime_plugin.WindowCommand):
                 {S_PANEL: "output.%s" % ERRORS_PANEL_NAME})
         else:
             sublime.status_message("No errors output so far.")
-
 
 
 # ### `external_program_show_output`
