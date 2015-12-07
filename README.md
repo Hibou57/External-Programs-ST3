@@ -5,20 +5,41 @@
 A plug-in for integration of external programs into Sublime Text 3, as text
 commands and window commands.
 
+ * [Summary][]
+ * [The `external_program` text command][]
+ * [The `build_like` window command][]
+ * [Rationals][]
+ * [License][]
 
 Summary
 ------------------------------------------------------------------------------
-Provides `external_program`, a command to run an external program on the
-current file, selection or nothing, pass the data to the program via a single
-argument, its standard input stream, or nothing, write back the result from
-the program taken from its standard output stream, inserted at the caret,
-written as a replacement of the selected text, to an output panel, or to
-nothing.
+Provides `external_program`, a command to run an external program on, either:
+
+ * the current file
+ * the current selection
+ * nothing
+
+Passes the data to the program via, either:
+
+ * a single argument
+ * its standard input stream
+ * nothing (makes sense when the argument is nothing)
+
+Writes back the result from the program taken from its standard output
+stream, either:
+
+ * inserted at the caret,
+ * written as a replacement of the selected text
+ * to an output panel
+ * to nothing.
+
+“Selection” means single selection, not multiple selections.
 
 In case of errors, messages are written to the status bar. If the invoked
 program sent text to its standard error stream, it will be displayed in an
 errors output panel. Note: this is not where the plug-in writes its own error
-messages, which always go to the status bar.
+messages, including the program returned status code, which always go to
+the status bar.
 
 Two commands are available from the command palette, to show the errors and
 output panel.
@@ -152,19 +173,21 @@ an editor to be another shell or to provide command line edition features. So
 there never will be more than single argument passing or (exclusive or)
 passing via standard input stream.
 
-
 This plug-in is to invoke external command as external program or wrapper
 script. If one needs to run a shell inside Sublime Text, there are plug-ins
-for this purpose, and if one needs to run command interactively without
-wishing fo a shell, there exist the
+for this purpose, and if one needs to run commands interactively without
+wishing for an in-editor interpreter, there exist the
 [External Command](https://packagecontrol.io/packages/External%20Command)
-plug-in, similar to this one at a very abstract level, but different enough for
-this plug-in to have a reason to be.
+plug-in, similar to this one at a very abstract level, but different enough
+for this plug-in to have a reason to be.
 
-Future version will probably just had two new options to the list of the
+Future versions will probably just had two new options to the list of the
 possible argument to pass to the program:
 
  * file as URI
  * file as URI with a fragment and/or range identifier
 
 
+License
+------------------------------------------------------------------------------
+See [LICENSE](LICENSE) file.
