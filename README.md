@@ -196,7 +196,7 @@ wishing for an in-editor interpreter, there exist the
 plug-in, similar to this one at a very abstract level, but different enough
 for this plug-in to have a reason to be.
 
-Future versions will probably just had two new options to the list of the
+Future versions will probably just add two new options to the list of the
 possible argument to pass to the program:
 
  * file as URI;
