@@ -118,7 +118,7 @@ extension), and the working directory is that of the file.
 
 ### Settings
 
-The command uses this settings:
+The command uses these settings:
 
  * `errors_panel_name`, which defaults to `errors`;
  * `output_panel_name`, which defaults to `output`;
@@ -192,8 +192,9 @@ line edition features (that's the purpose of plug-ins). So there never will be
 more than single argument passing or (exclusive or) passing via standard input
 stream.
 
-This plug-in is to invoke external specially crafted simple command as
-external program or wrapper script:
+This plug-in is to invoke external specially crafted simple commands as
+external programs or wrapper scripts (which is a convenient tactic, as it
+allows the reuse of these commands from editor to editor, in a simple manner):
 
  * If one needs to run a shell or interpreter from from Sublime Text, xe
    better use
@@ -202,7 +203,7 @@ external program or wrapper script:
  * If one needs to run external commands interactively without wishing for an
    interpreter, xe better use
    [External Command](https://packagecontrol.io/packages/External%20Command),
-   a plug-in, similar to this one at a very abstract level, but different
+   a plug-in, similar to this one at a abstract level, but different
    enough for this plug-in to have a reason to be.
  * If one needs to run possibly long running commands asynchronously, xe
    better use
