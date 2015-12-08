@@ -12,17 +12,17 @@ file at the GitHub repository.
 If you're on a hurry, here is quickly, a snippet of an entry of an ST commands
 file, which should match most common needs (example from the README file):
 
-{
-    "caption": "Text: Format",
-    "command": "external_program",
-    "args": {
-        "executable": "format-text",
-        "source": "selected_text",
-        "through": "stdin",
-        "destination": "insert_replace",
-        "panels": "reset"
+    {
+        "caption": "Text: Format",
+        "command": "external_program",
+        "args": {
+            "executable": "format-text",
+            "source": "selected_text",
+            "through": "stdin",
+            "destination": "insert_replace",
+            "panels": "reset"
+        }
     }
-}
 
 Just change the `caption` and `executable` part, and this will likely matches
 your needs.
