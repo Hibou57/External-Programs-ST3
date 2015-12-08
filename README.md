@@ -10,13 +10,15 @@ on each invocation, wish to use an interpreter from Sublime Text or
 fully-featured options for program invocation, xe better use one of the three
 alternatives mentioned in [Rationals][].
 
- * [Summary][]
- * [Installation][]
- * [The `external_program` text command][]
- * [The `build_like` window command][]
- * [Rationals][]
- * [License][]
+ * [Summary](#summary)
+ * [Installation](#installation)
+ * [The `external_program` text command](#external_program)
+ * [The `build_like` window command](#build_like)
+ * [Rationals](#rationals)
+ * [License](#license)
 
+
+<a name="summary"></a>
 
 Summary
 ------------------------------------------------------------------------------
@@ -64,11 +66,15 @@ not-expanded). This plug-in provides a way to work around this. This
 additional command is independent from the one described above.
 
 
+<a name="installation"></a>
+
 Installation
 ------------------------------------------------------------------------------
 The plug-in is to be installed as `External_Programs`. Using another name,
 would break file references.
 
+
+<a name="external_program"></a>
 
 The `external_program` text command
 ------------------------------------------------------------------------------
@@ -152,6 +158,8 @@ Sublime Text preferences, and panels switch color scheme when this preference
 is changed.
 
 
+<a name="build_like"></a>
+
 The `build_like` window command
 ------------------------------------------------------------------------------
 A window command to run an external command on a file, using `exec`, like from
@@ -197,6 +205,8 @@ file.
 `default_file_regex`, as described above.
 
 
+<a name="rationals"></a>
+
 Rationals
 ------------------------------------------------------------------------------
 The program invocation is purposely simple and executed synchronously. This
@@ -225,6 +235,8 @@ do not overlap (I'm personally using a patched version of `External Command`
 along to `External_Programs`). The third will supersede this one if one wants
 features which a purposely simple program invocation will never provides.
 
+
+<a name="license"></a>
 
 License
 ------------------------------------------------------------------------------
