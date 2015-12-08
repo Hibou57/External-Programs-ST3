@@ -19,8 +19,25 @@ import sublime
 import sublime_plugin
 import subprocess
 
-SETTINGS = sublime.load_settings("External_Programs.sublime-settings")
-PREFERENCES = sublime.load_settings("Preferences.sublime-settings")
+
+def get_setting(key, default):
+    """ Return value from `External_Programs.sublime-settings` or default. """
+    settings = sublime.load_settings("External_Programs.sublime-settings")
+    result = settings.get(key) if settings.has(key) else default
+    return result
+
+
+def get_preference(key, default):
+    """ Return value from `Preferences.sublime-settings` or default. """
+    preferences = sublime.load_settings("Preferences.sublime-settings")
+    result = preferences.get(key) if preferences.has(key) else default
+    return result
+
+
+def register_preference_handler(key, handler):
+    """ Register a change handler for `Preferences.sublime-settings`. """
+    preferences = sublime.load_settings("Preferences.sublime-settings")
+    preferences.add_on_change(key, handler)
 
 
 # Build_Like
@@ -48,7 +65,7 @@ S_DEFAULT_REGEX = "default_file_regex"
 # ----------------------------------------------------------------------------
 def get_default_file_regex():
     """ Return default file regex after settings or else a default. """
-    result = SETTINGS.get(S_DEFAULT_FILE_REGEX, DEFAULT_FILE_REGEX)
+    result = get_setting(S_DEFAULT_FILE_REGEX, DEFAULT_FILE_REGEX)
     return result
 
 
@@ -165,11 +182,11 @@ S_TIMEOUT_DELAY = "timeout_delay"
 
 # Constants from settings
 # ----------------------------------------------------------------------------
-ERRORS_PANEL_NAME = SETTINGS.get(  # Changes requires restart.
+ERRORS_PANEL_NAME = get_setting(
     S_ERRORS_PANEL_NAME,
     DEFAULT_ERRORS_PANEL_NAME)
 
-OUTPUT_PANEL_NAME = SETTINGS.get(  # Changes requires restart.
+OUTPUT_PANEL_NAME = get_setting(
     S_OUTPUT_PANEL_NAME,
     DEFAULT_OUTPUT_PANEL_NAME)
 
@@ -205,7 +222,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         `COLOR_SCHEME` may still be `None`.
 
         """
-        cls.COLOR_SCHEME = PREFERENCES.get(
+        cls.COLOR_SCHEME = get_preference(
             S_COLOR_SCHEME,
             DEFAULT_COLOR_SCHEME)
 
@@ -230,7 +247,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
     def register_color_scheme_handler(cls):
         """ Register `on_color_scheme_changed`. """
         if not cls.COLOR_SCHEME_HANDLER_REGISTERED:
-            PREFERENCES.add_on_change(
+            register_preference_handler(
                 S_COLOR_SCHEME,
                 cls.on_color_scheme_changed)
             cls.COLOR_SCHEME_HANDLER_REGISTERED = True
@@ -463,7 +480,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
     @staticmethod
     def get_timeout_delay():
         """ Return timeout delay after settings or else a default. """
-        result = SETTINGS.get(S_TIMEOUT_DELAY, DEFAULT_TIMEOUT_DELAY)
+        result = get_setting(S_TIMEOUT_DELAY, DEFAULT_TIMEOUT_DELAY)
         return result
 
     def get_working_directory(self):
