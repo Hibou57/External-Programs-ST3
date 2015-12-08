@@ -8,7 +8,7 @@ commands and window commands.
 Program invocation *is not interactive*; if one needs to edit a command line
 on each invocation, wish to use an interpreter from Sublime Text or
 fully-featured options for program invocation, xe better use one of the three
-alternatives mentioned in [Rationals][].
+alternatives mentioned in [Rationals](#rationals).
 
  * [Summary](#summary)
  * [Installation](#installation)
@@ -70,8 +70,10 @@ additional command is independent from the one described above.
 
 Installation
 ------------------------------------------------------------------------------
-The plug-in is to be installed as `External_Programs`. Using another name,
-would break file references.
+Either using [Package Control](https://packagecontrol.io), or manually using a
+source archive. For manual install in `Packages/`, the plug-in is to be
+installed as  `External_Programs`, as using another name, would break file
+references.
 
 
 <a name="external_program"></a>
@@ -81,7 +83,7 @@ The `external_program` text command
 Integration of external program with simple invocation (no complex command
 line), mainly as text command.
 
-A part of this command's documentation is in [Summary][].
+A part of this command's documentation is in [Summary](#summary).
 
 Two helper commands are provided:
 
@@ -122,7 +124,7 @@ All parameters but `panels` are required.
 When `panels` is `accumulate` means new content to the output and errors
 panels, is appended to their previous content.
 
-More mon `source`:
+More on `source`:
 
  * `selected_text`: the selected text where the selection is not empty and not
     a multiple selection;
