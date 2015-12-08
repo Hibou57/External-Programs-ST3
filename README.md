@@ -16,11 +16,13 @@ use one of the two alternatives mentioned in [Rationals][].
  * [Rationals][]
  * [License][]
 
+
 Summary
 ------------------------------------------------------------------------------
 Provides `external_program`, a command to run an external program on, either:
 
  * the current file;
+ * the file URI with/without character position/range fragment identifier;
  * the current selection;
  * nothing.
 
@@ -105,7 +107,7 @@ Valid parameter values:
  * `destination`: [enum] `insert_replace` | `output_panel` | `nothing`;
  * `executable`: [string] name or path to the program;
  * `panels`: [enum] `reset` (default) | `accumulate`;
- * `source`: [enum] `selected_text` | `file_name` | `nothing`;
+ * `source`: [enum] `selected_text`|`file_name`|`file_uri`|`text_uri`|`nothing`;
  * `through`: [enum] `stdin` | `single_argument` | `nothing`.
 
 All parameters but `panels` are required.
@@ -113,8 +115,18 @@ All parameters but `panels` are required.
 When `panels` is `accumulate` means new content to the output and errors
 panels, is appended to their previous content.
 
-When `source` is `file_name` the simple file name is passed (base name with
-extension), and the working directory is that of the file.
+More mon `source`:
+
+ * `selected_text`: the selected text where the selection is not empty and not
+    a multiple selection;
+ * `file_name`: the simple file name, that is, base name with extension (note
+    the working directory is that of the file);
+ * `file_uri`: URI with the `file:` protocol and an absolute path,
+    percent-encoded as necessary;
+ * `text_uri`: file URI with text position or range fragment identifier, after
+    [RFC 5147](http://tools.ietf.org/html/rfc5147), using the `char` scheme
+    only, where the selection is not a multiple selection (when no selection,
+    this is the same as `file_uri`).
 
 ### Settings
 
@@ -183,6 +195,7 @@ file.
 
 `default_file_regex`, as described above.
 
+
 Rationals
 ------------------------------------------------------------------------------
 The program invocation is purposely simple and executed synchronously. This
@@ -212,12 +225,6 @@ allows the reuse of these commands from editor to editor, in a simple manner):
 They may be installed together, as their features do not overlap (I'm
 personally using a patched version of `External Command` along to
 `External_Programs`).
-
-Future versions will probably just add two new options to the list of the
-possible data to pass to the program:
-
- * file as URI;
- * file as URI with a fragment and/or range identifier.
 
 
 License

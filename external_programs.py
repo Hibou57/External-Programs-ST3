@@ -18,6 +18,7 @@ import os.path
 import sublime
 import sublime_plugin
 import subprocess
+import urllib.parse
 
 
 def get_setting(key, default):
@@ -144,6 +145,7 @@ class BuildLikeCommand(sublime_plugin.WindowCommand):
 #  * `setup_panels` it-self        for `panels:accumulate`
 #  * `erase_view_content`          for `panels:reset`
 #  * `get_file_name`               for `source:file_name`
+#  * `get_file_uri`                for `source:file_uri`
 #  * `get_input` it-self           for `source:nothing`
 #  * `get_selected_text`           for `source:selected_text`
 #  * `invok_using_nothing`         for `though:nothing`
@@ -170,6 +172,7 @@ S_SHOW_PANEL = "show_panel"
 S_ACCUMULATE = "accumulate"
 S_ERRORS_PANEL_NAME = "errors_panel_name"
 S_FILE_NAME = "file_name"
+S_FILE_URI = "file_uri"
 S_INSERT_REPLACE = "insert_replace"
 S_NOTHING = "nothing"
 S_OUTPUT_PANEL = "output_panel"
@@ -178,6 +181,7 @@ S_RESET = "reset"
 S_SELECTED_TEXT = "selected_text"
 S_SINGLE_ARGUMENT = "single_argument"
 S_STDIN = "stdin"
+S_TEXT_URI = "text_uri"
 S_TIMEOUT_DELAY = "timeout_delay"
 
 # Constants from settings
@@ -194,6 +198,7 @@ OUTPUT_PANEL_NAME = get_setting(
 # The class
 # ----------------------------------------------------------------------------
 class ExternalProgramCommand(sublime_plugin.TextCommand):
+
     """ Full integration of external program, mainly as text command.
 
     See [README](README.md) on section `external_program`.
@@ -321,6 +326,36 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
     # Input (text content passed to invoked program)
     # ------------------------------------------------------------------------
 
+    # ### Helper
+
+    def get_text_fragment_identifier(self):
+        """ Return a character position or range identifier after RFC 5147.
+
+        The identifier returned contains the `#` prefix and if if there is no
+        selection, return an empty string, so that the result can be directly
+        appended to an URI.
+
+        Display an error in the status bar and return `None`, in case of
+        multiple selection.
+
+        """
+        result = None
+        view = self.view
+        sel = view.sel()
+        if len(sel) == 0:
+            result = ""
+        elif len(sel) > 1:
+            sublime.status_message("Error: multiple selections")
+        else:
+            region = sel[0]
+            if region.a == region.b:
+                result = "#char=%i" % region.a
+            else:
+                result = "#char=%i,%i" % (region.a, region.b)
+        return result
+
+    # ### Main
+
     def get_file_name(self):
         """ Return the simple file name of the active file or `None`.
 
@@ -338,6 +373,47 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             sublime.status_message("Error: no file")
         else:
             result = os.path.split(file)[1]
+        return result
+
+    def get_file_uri(self):
+        """ Return the URI of the active file or `None`.
+
+        If there is no active file for the active view, additionally to
+        returning `None`, display an error message in the status bar.
+
+        This is to be the argument passed to the invoked program, when
+        `source` is `file_uri`.
+
+        """
+        result = None
+        view = self.view
+        file = view.file_name()
+        if file is None:
+            sublime.status_message("Error: no file")
+        else:
+            path = os.path.abspath(file)
+            path = urllib.parse.quote(path)
+            result = "file://%s" % path
+        return result
+
+    def get_text_uri(self):
+        """ Return text URI of selection in the active file or `None`.
+
+        If there is no selection, the result is the same as the file URI. The
+        fragment identifier is from `get_text_fragment_identifier`.
+
+        If there is no active file or a multiple selection, display an error
+        message in the status bar.
+
+        This is to be the argument passed to the invoked program, when
+        `source` is `text_uri`.
+
+        """
+        file_uri = self.get_file_uri()
+        if file_uri is not None:
+            text_fid = self.get_text_fragment_identifier()
+            if text_fid is not None:
+                result = file_uri + text_fid
         return result
 
     def get_selected_text(self):
@@ -380,6 +456,10 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             result = self.get_selected_text()
         elif source == S_FILE_NAME:
             result = self.get_file_name()
+        elif source == S_FILE_URI:
+            result = self.get_file_uri()
+        elif source == S_TEXT_URI:
+            result = self.get_text_uri()
         elif source == S_NOTHING:
             result = ""
         else:
@@ -698,6 +778,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
 # ### `external_program_show_errors`
 
 class ExternalProgramShowErrors(sublime_plugin.WindowCommand):
+
     """ Command to show the errors panel. """
 
     def __init__(self, arg2):
@@ -717,6 +798,7 @@ class ExternalProgramShowErrors(sublime_plugin.WindowCommand):
 # ### `external_program_show_output`
 
 class ExternalProgramShowOutput(sublime_plugin.WindowCommand):
+
     """ Command to show the output panel. """
 
     def __init__(self, arg2):
