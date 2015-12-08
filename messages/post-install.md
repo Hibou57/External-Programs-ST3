@@ -1,7 +1,3 @@
-
-Post Install Message for `External_Programs`
-==============================================================================
-
 This package does not automatically add any new directly useful commands,
 instead, it allows you to define new ones.
 
