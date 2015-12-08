@@ -192,20 +192,21 @@ line edition features (that's the purpose of plug-ins). So there never will be
 more than single argument passing or (exclusive or) passing via standard input
 stream.
 
-This plug-in is to invoke external command as external program or wrapper
-script:
+This plug-in is to invoke external specially crafted simple command as
+external program or wrapper script:
 
-* If one needs to run a shell or interpreter from from Sublime Text, xe better
-  use [External REPL](https://packagecontrol.io/packages/External%20REPL) for
-  this purpose.
-* If one needs to run external commands interactively without wishing for an
-  interpreter, xe better use
-  [External Command](https://packagecontrol.io/packages/External%20Command)
-  plug-in, similar to this one at a very abstract level, but different enough
-  for this plug-in to have a reason to be.
-* If one needs to run possibly long running commands asynchronously, xe better
-  use
-  [External Command](https://packagecontrol.io/packages/External%20Command).
+ * If one needs to run a shell or interpreter from from Sublime Text, xe
+   better use
+   [External REPL](https://packagecontrol.io/packages/External%20REPL) for
+   this purpose.
+ * If one needs to run external commands interactively without wishing for an
+   interpreter, xe better use
+   [External Command](https://packagecontrol.io/packages/External%20Command),
+   a plug-in, similar to this one at a very abstract level, but different
+   enough for this plug-in to have a reason to be.
+ * If one needs to run possibly long running commands asynchronously, xe
+   better use
+   [External Command](https://packagecontrol.io/packages/External%20Command).
 
 They may be installed together, as their features do not overlap (I'm
 personally using a patched version of `External Command` along to
