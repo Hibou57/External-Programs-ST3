@@ -6,8 +6,9 @@ A plug-in for integration of external programs into Sublime Text 3, as text
 commands and window commands.
 
 Program invocation *is not interactive*; if one needs to edit a command line
-on each invocation or wish to use an interpreter from Sublime Text, xe better
-use one of the two alternatives mentioned in [Rationals][].
+on each invocation, wish to use an interpreter from Sublime Text or
+fully-featured options for program invocation, xe better use one of the three
+alternatives mentioned in [Rationals][].
 
  * [Summary][]
  * [Installation][]
@@ -213,18 +214,16 @@ allows the reuse of these commands from editor to editor, in a simple manner):
    better use
    [External REPL](https://packagecontrol.io/packages/External%20REPL) for
    this purpose.
- * If one needs to run external commands interactively without wishing for an
-   interpreter, xe better use
-   [External Command](https://packagecontrol.io/packages/External%20Command),
-   a plug-in, similar to this one at a abstract level, but different
-   enough for this plug-in to have a reason to be.
- * If one needs to run possibly long running commands asynchronously, xe
-   better use
+ * If one needs to run external commands interactively, or possibly long
+   running process asynchronously, xe better use
    [External Command](https://packagecontrol.io/packages/External%20Command).
+ * If one needs fully-featured options, xe better use
+   [Commando](https://packagecontrol.io/packages/Commando).
 
-They may be installed together, as their features do not overlap (I'm
-personally using a patched version of `External Command` along to
-`External_Programs`).
+This package with the two firsts, may be installed together, as their features
+do not overlap (I'm personally using a patched version of `External Command`
+along to `External_Programs`). The third will supersede this one if one wants
+features which a purposely simple program invocation will never provides.
 
 
 License
