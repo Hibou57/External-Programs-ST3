@@ -1,9 +1,9 @@
-""" Run an external program on the current file, selection or nothing, pass
-the data to the program via a single argument, its standard input stream, or
-nothing, write back the result from the program taken from its standard output
-stream, inserted at the caret, written as a replacement of the selected text,
-to an output panel, or to nothing. Provide a work-around for `exec` from
-`*.sublime-commands` files.
+""" Run an external program on the current file, file URI, text URI, selection
+or nothing, pass the data to the program via a single argument, its standard
+input stream, or nothing, write back the result from the program taken from
+its standard output stream, inserted at the caret, written as a replacement of
+the selected text, to an output panel, or to nothing. Provide a work-around
+for `exec` from `*.sublime-commands` files.
 
 See [README](README.md).
 
@@ -95,8 +95,6 @@ class BuildLikeCommand(sublime_plugin.WindowCommand):
         error message in the status bar, and do nothing. Otherwise, output
         goes to the `exec` output panel as usual.
 
-        Note: pass a standard regular expression for `file_regex` to `exec`.
-
         """
         if file_regex is None:
             file_regex = get_default_file_regex()
@@ -124,7 +122,7 @@ class BuildLikeCommand(sublime_plugin.WindowCommand):
             "a single argument.")
 
 
-# External_Command
+# External_Program
 # ============================================================================
 
 # Main entry point is `run`
@@ -623,7 +621,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
 
         timeout_delay = cls.get_timeout_delay()
 
-        # ### Exception handling
+        # #### Exception handling
 
         def on_error(error, process):
             """ Handle `OSError` and `TimeoutExpired`, returning `stderr`.
@@ -654,7 +652,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
                     % executable)
             return stderr
 
-        # ### Methods
+        # #### Methods
 
         def invoke_using_stdin(text):
             """ Invoke the program with `text` passed through its `stdin`.
@@ -718,7 +716,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
                 result = (None, on_error(error, process), None)
             return result
 
-        # ### Main
+        # #### Main
 
         if through == S_STDIN:
             result = invoke_using_stdin
