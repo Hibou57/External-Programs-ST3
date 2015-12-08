@@ -21,23 +21,27 @@ import subprocess
 import urllib.parse
 
 
+SETTINGS_FILE = "External_Programs.sublime-settings"
+PREFERENCES_FILE = "Preferences.sublime-settings"
+
+
 def get_setting(key, default):
-    """ Return value from `External_Programs.sublime-settings` or default. """
-    settings = sublime.load_settings("External_Programs.sublime-settings")
+    """ Return value from `SETTINGS_FILE` or default. """
+    settings = sublime.load_settings(SETTINGS_FILE)
     result = settings.get(key) if settings.has(key) else default
     return result
 
 
 def get_preference(key, default):
-    """ Return value from `Preferences.sublime-settings` or default. """
-    preferences = sublime.load_settings("Preferences.sublime-settings")
+    """ Return value from `PREFERENCES_FILE` or default. """
+    preferences = sublime.load_settings(PREFERENCES_FILE)
     result = preferences.get(key) if preferences.has(key) else default
     return result
 
 
 def register_preference_handler(key, handler):
-    """ Register a change handler for `Preferences.sublime-settings`. """
-    preferences = sublime.load_settings("Preferences.sublime-settings")
+    """ Register a change handler for `PREFERENCES_FILE`. """
+    preferences = sublime.load_settings(PREFERENCES_FILE)
     preferences.add_on_change(key, handler)
 
 
@@ -76,7 +80,7 @@ class BuildLikeCommand(sublime_plugin.WindowCommand):
 
     """ A window command to run an external command on a file, using `exec`.
 
-    See [README](README.md) on section `like_build`.
+    See [README](README.md) on section `build_like`.
 
     """
 
@@ -125,32 +129,40 @@ class BuildLikeCommand(sublime_plugin.WindowCommand):
 
 # Main entry point is `run`
 #
-# Settings are handle by:
+#
+# Settings are handled by:
+#
 #  * `ERRORS_PANEL_NAME`
 #  * `OUTPUT_PANEL_NAME`
 #  * `update_color_scheme`
 #  * `get_timeout_delay`
 #
+#
 # Parameters are interpreted by:
+#
 #  * `get_output_method`     for `destination`
 #  * `get_invokation_method` for `executable`
 #  * `setup_panels`          for `panels`
 #  * `get_input`             for `source`
 #  * `get_invokation_method` for `through`
 #
+#
 # Parameter values are handled by:
-#  * `get_insert_replace_writer`   for `destination:insert_replace`
-#  * `get_nothing_writer`          for `destination:nothing`
-#  * `get_output_panel_writer`     for `destination:output_panel`
-#  * `setup_panels` it-self        for `panels:accumulate`
-#  * `erase_view_content`          for `panels:reset`
-#  * `get_file_name`               for `source:file_name`
-#  * `get_file_uri`                for `source:file_uri`
-#  * `get_input` it-self           for `source:nothing`
-#  * `get_selected_text`           for `source:selected_text`
-#  * `invok_using_nothing`         for `though:nothing`
-#  * `invok_using_single_argument` for `though:single_argument`
-#  * `invok_using_stdin`           for `though:stdin`
+#
+#  * `get_insert_replace_writer`    for `destination:insert_replace`
+#  * `get_nothing_writer`           for `destination:nothing`
+#  * `get_output_panel_writer`      for `destination:output_panel`
+#  * `setup_panels` it-self         for `panels:accumulate`
+#  * `erase_view_content`           for `panels:reset`
+#  * `get_file_name`                for `source:file_name`
+#  * `get_file_uri`                 for `source:file_uri`
+#  * `get_input` it-self            for `source:nothing`
+#  * `get_selected_text`            for `source:selected_text`
+#  * `get_text_uri`                 for `source:text_uri`
+#  * `invoke_using_nothing`         for `though:nothing`
+#  * `invoke_using_single_argument` for `though:single_argument`
+#  * `invoke_using_stdin`           for `though:stdin`
+
 
 # Default when no settings found
 # ----------------------------------------------------------------------------
@@ -186,11 +198,11 @@ S_TIMEOUT_DELAY = "timeout_delay"
 
 # Constants from settings
 # ----------------------------------------------------------------------------
-ERRORS_PANEL_NAME = get_setting(
+ERRORS_PANEL_NAME = get_setting(  # Change requires restart
     S_ERRORS_PANEL_NAME,
     DEFAULT_ERRORS_PANEL_NAME)
 
-OUTPUT_PANEL_NAME = get_setting(
+OUTPUT_PANEL_NAME = get_setting(  # Change requires restart
     S_OUTPUT_PANEL_NAME,
     DEFAULT_OUTPUT_PANEL_NAME)
 
@@ -199,7 +211,7 @@ OUTPUT_PANEL_NAME = get_setting(
 # ----------------------------------------------------------------------------
 class ExternalProgramCommand(sublime_plugin.TextCommand):
 
-    """ Full integration of external program, mainly as text command.
+    """ Integration of external program, mainly as text command.
 
     See [README](README.md) on section `external_program`.
 
@@ -557,6 +569,8 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
     # Process
     # ------------------------------------------------------------------------
 
+    # ### Helpers
+
     @staticmethod
     def get_timeout_delay():
         """ Return timeout delay after settings or else a default. """
@@ -576,6 +590,8 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         if file is not None:
             result = os.path.split(file)[0]
         return result
+
+    # ### Main
 
     @classmethod
     def get_invokation_method(cls, executable, directory, through):
@@ -640,7 +656,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
 
         # ### Methods
 
-        def invok_using_stdin(text):
+        def invoke_using_stdin(text):
             """ Invoke the program with `text` passed through its `stdin`.
 
             Return `(stdout, stderr, return_code)`.
@@ -662,7 +678,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
                 result = (None, on_error(error, process), None)
             return result
 
-        def invok_using_single_argument(text):
+        def invoke_using_single_argument(text):
             """ Invoke the program with `text` passed as a single argument.
 
             Return `(stdout, stderr, return_code)`.
@@ -682,7 +698,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
                 result = (None, on_error(error, process), None)
             return result
 
-        def invok_using_nothing():
+        def invoke_using_nothing():
             """ Invoke the program with nothing (no argument, no input).
 
             Return `(stdout, stderr, return_code)`.
@@ -705,11 +721,11 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         # ### Main
 
         if through == S_STDIN:
-            result = invok_using_stdin
+            result = invoke_using_stdin
         elif through == S_SINGLE_ARGUMENT:
-            result = invok_using_single_argument
+            result = invoke_using_single_argument
         elif through == S_NOTHING:
-            result = invok_using_nothing
+            result = invoke_using_nothing
         else:
             result = None
             sublime.status_message(
@@ -729,7 +745,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             destination,
             panels=S_RESET):
 
-        """ Invoke `executable` as specified by the three last parameters.
+        """ Invoke `executable` as specified by the next three parameters.
 
         In case of error(s), write an error message to the status bar.
 
