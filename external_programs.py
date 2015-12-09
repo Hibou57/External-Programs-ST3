@@ -21,28 +21,10 @@ import subprocess
 import urllib.parse
 
 
-SETTINGS_FILE = "External_Programs.sublime-settings"
 PREFERENCES_FILE = "Preferences.sublime-settings"
-
-
-def get_setting(key, default):
-    """ Return value from `SETTINGS_FILE` or default. """
-    settings = sublime.load_settings(SETTINGS_FILE)
-    result = settings.get(key) if settings.has(key) else default
-    return result
-
-
-def get_preference(key, default):
-    """ Return value from `PREFERENCES_FILE` or default. """
-    preferences = sublime.load_settings(PREFERENCES_FILE)
-    result = preferences.get(key) if preferences.has(key) else default
-    return result
-
-
-def register_preference_handler(key, handler):
-    """ Register a change handler for `PREFERENCES_FILE`. """
-    preferences = sublime.load_settings(PREFERENCES_FILE)
-    preferences.add_on_change(key, handler)
+SETTINGS_FILE = "External_Programs.sublime-settings"
+PREFERENCES = None  # Initialized by `plugin_loaded`
+SETTINGS = None  # Initialized by `plugin_loaded`
 
 
 # Build_Like
@@ -70,7 +52,7 @@ S_DEFAULT_REGEX = "default_file_regex"
 # ----------------------------------------------------------------------------
 def get_default_file_regex():
     """ Return default file regex after settings or else a default. """
-    result = get_setting(S_DEFAULT_FILE_REGEX, DEFAULT_FILE_REGEX)
+    result = SETTINGS.get(S_DEFAULT_FILE_REGEX, DEFAULT_FILE_REGEX)
     return result
 
 
@@ -196,13 +178,8 @@ S_TIMEOUT_DELAY = "timeout_delay"
 
 # Constants from settings
 # ----------------------------------------------------------------------------
-ERRORS_PANEL_NAME = get_setting(  # Change requires restart
-    S_ERRORS_PANEL_NAME,
-    DEFAULT_ERRORS_PANEL_NAME)
-
-OUTPUT_PANEL_NAME = get_setting(  # Change requires restart
-    S_OUTPUT_PANEL_NAME,
-    DEFAULT_OUTPUT_PANEL_NAME)
+ERRORS_PANEL_NAME = None  # Initialized by `plugin_loaded`
+OUTPUT_PANEL_NAME = None  # Initialized by `plugin_loaded`
 
 
 # The class
@@ -237,7 +214,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         `COLOR_SCHEME` may still be `None`.
 
         """
-        cls.COLOR_SCHEME = get_preference(
+        cls.COLOR_SCHEME = PREFERENCES.get(
             S_COLOR_SCHEME,
             DEFAULT_COLOR_SCHEME)
 
@@ -262,7 +239,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
     def register_color_scheme_handler(cls):
         """ Register `on_color_scheme_changed`. """
         if not cls.COLOR_SCHEME_HANDLER_REGISTERED:
-            register_preference_handler(
+            PREFERENCES.add_on_change(
                 S_COLOR_SCHEME,
                 cls.on_color_scheme_changed)
             cls.COLOR_SCHEME_HANDLER_REGISTERED = True
@@ -572,7 +549,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
     @staticmethod
     def get_timeout_delay():
         """ Return timeout delay after settings or else a default. """
-        result = get_setting(S_TIMEOUT_DELAY, DEFAULT_TIMEOUT_DELAY)
+        result = SETTINGS.get(S_TIMEOUT_DELAY, DEFAULT_TIMEOUT_DELAY)
         return result
 
     def get_working_directory(self):
@@ -827,3 +804,29 @@ class ExternalProgramShowOutput(sublime_plugin.WindowCommand):
                 {S_PANEL: "output.%s" % OUTPUT_PANEL_NAME})
         else:
             sublime.status_message("No output result so far.")
+
+
+# Load-time
+# ============================================================================
+
+def plugin_loaded():
+    """ Initialize globals which can't be initialized at module load-time. """
+
+    # Sorry, PyLint, there is no other way.
+    # pylint: disable=global-statement
+
+    global ERRORS_PANEL_NAME
+    global OUTPUT_PANEL_NAME
+    global PREFERENCES
+    global SETTINGS
+
+    PREFERENCES = sublime.load_settings(PREFERENCES_FILE)
+    SETTINGS = sublime.load_settings(SETTINGS_FILE)
+
+    ERRORS_PANEL_NAME = SETTINGS.get(  # Change requires restart
+        S_ERRORS_PANEL_NAME,
+        DEFAULT_ERRORS_PANEL_NAME)
+
+    OUTPUT_PANEL_NAME = SETTINGS.get(  # Change requires restart
+        S_OUTPUT_PANEL_NAME,
+        DEFAULT_OUTPUT_PANEL_NAME)
