@@ -535,21 +535,18 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             try:
                 raise error
             except OSError:
-                sublime.status_message(
-                    "Error: could not run `%s`"
-                    % executable)
+                message = "Error: could not run %s" % executable
             except subprocess.TimeoutExpired as timeout:
                 stderr = getattr(timeout, "stderr", "")
                 process.kill()
                 (_stdout, stderr_tail) = process.communicate()
                 stderr += stderr_tail
-                sublime.status_message(
-                    "Error: `%s` takes too long"
-                    % executable)
+                message = "Error: %s takes too long" % executable
             except:  # pylint: disable=bare-except
-                sublime.status_message(
-                    "Unknown error while attempting to run `%s`"
-                    % executable)
+                message = "Unknown error while attempting to run %s" % executable
+
+            print(message);
+            sublime.status_message(message);
             return stderr
 
         # #### Methods
