@@ -558,6 +558,8 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
 
             """
             try:
+                print("Executing: %s" % executable)
+
                 process = subprocess.Popen(
                     executable,
                     cwd=directory,
@@ -582,6 +584,8 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             """
             try:
                 executable.append(text)
+
+                print("Executing: %s" % executable)
 
                 process = subprocess.Popen(
                     executable,
@@ -611,6 +615,8 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
 
             """
             try:
+                print("Executing: %s" % executable)
+
                 process = subprocess.Popen(
                     executable,
                     cwd=directory,
