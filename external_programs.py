@@ -651,6 +651,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
                     executable,
                     cwd=directory,
                     universal_newlines=True,
+                    shell=True,
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE)
@@ -675,6 +676,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
                     executable,
                     cwd=directory,
                     universal_newlines=True,
+                    shell=True,
                     stdin=None,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE)
@@ -695,6 +697,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
                     executable,
                     cwd=directory,
                     universal_newlines=True,
+                    shell=True,
                     stdin=None,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE)
