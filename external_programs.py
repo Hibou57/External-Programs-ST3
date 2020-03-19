@@ -492,7 +492,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
     # ### Main
 
     @classmethod
-    def get_invokation_method(cls, executable, directory, through):
+    def get_invokation_method(cls, executable, directory, through, destination):
         """ Return the method to invoke the program or `None`.
 
         If `through` is unknown, additionally to returning `None`, display an
@@ -592,10 +592,17 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
                     universal_newlines=True,
                     shell=True,
                     stdin=None,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE)
-                (stdout, stderr) = process.communicate(timeout=timeout_delay)
-                result = (stdout, stderr, process.returncode)
+                    stdout = None if destination == "nothing" else subprocess.PIPE,
+                    stderr = None if destination == "nothing" else subprocess.PIPE)
+
+                if destination != "nothing":
+                    (stdout, stderr) = process.communicate(timeout=timeout_delay)
+                    result = (stdout, stderr, process.returncode)
+
+                else:
+                    # It's probably a GUI application. We're not interested in the output.
+                    result = ("", "", 0)
+
             except Exception as error:  # pylint: disable=broad-except
                 result = (None, on_error(error, process), None)
             return result
@@ -613,10 +620,17 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
                     universal_newlines=True,
                     shell=True,
                     stdin=None,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE)
-                (stdout, stderr) = process.communicate(timeout=timeout_delay)
-                result = (stdout, stderr, process.returncode)
+                    stdout = None if destination == "nothing" else subprocess.PIPE,
+                    stderr = None if destination == "nothing" else subprocess.PIPE)
+
+                if destination != "nothing":
+                    (stdout, stderr) = process.communicate(timeout=timeout_delay)
+                    result = (stdout, stderr, process.returncode)
+
+                else:
+                    # It's probably a GUI application. We're not interested in the output.
+                    result = ("", "", 0)
+
             except Exception as error:  # pylint: disable=broad-except
                 result = (None, on_error(error, process), None)
             return result
@@ -668,7 +682,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         executable = [sublime.expand_variables(value, variables) for value in executable]
 
         input = self.get_input(source)
-        invoke = self.get_invokation_method(executable, directory, through)
+        invoke = self.get_invokation_method(executable, directory, through, destination)
         output = self.get_output_method(destination, edit)
         # Parameters interpretation end
         if cls.BUSY:

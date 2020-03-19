@@ -133,6 +133,11 @@ that Sublime Text uses in its build system. See the list below:
 | `$project_base_name` | The file name, excluding the extension, of the current project file.                |
 | `$project_extension` | The extension of the current project file.                                          |
 
+If the command you're running starts a GUI application, then don't set the `destination`
+parameter. If the `destination` is set, then the plugin waits for the command's stdout and
+return code. This typically ends with a timeout error for a GUI application which
+is expected to run for a long time.
+
 When `panels` is `accumulate` means new content to the output and errors
 panels, is appended to their previous content.
 
