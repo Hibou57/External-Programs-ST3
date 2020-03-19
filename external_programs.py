@@ -643,9 +643,9 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
     def run(self,
             edit,
             executable,
-            source,
-            through,
-            destination,
+            source="nothing",
+            through="nothing",
+            destination="nothing",
             panels=S_RESET):
 
         """ Invoke `executable` as specified by the next three parameters.

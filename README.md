@@ -105,13 +105,13 @@ Example usage from a `*.sublime-commands` file:
 
 Valid parameter values:
 
- * `destination`: [enum] `insert_replace` | `output_panel` | `nothing`;
+ * `destination`: [enum] `insert_replace` | `output_panel` | `nothing` (default);
  * `executable`: [string|list] name or path to the program and optional args;
  * `panels`: [enum] `reset` (default) | `accumulate`;
- * `source`: [enum] `selected_text`|`file_name`|`file_uri`|`text_uri`|`nothing`;
- * `through`: [enum] `stdin` | `single_argument` | `nothing`.
+ * `source`: [enum] `selected_text`|`file_name`|`file_uri`|`text_uri`|`nothing` (default);
+ * `through`: [enum] `stdin` | `single_argument` | `nothing` (default).
 
-All parameters but `panels` are required.
+Only `executable` parameter is required.
 
 If the `executable` parameter is a list, it may contain some variables. These are
 [the same variables](http://www.sublimetext.com/docs/3/build_systems.html#variables)
