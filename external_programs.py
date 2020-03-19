@@ -600,7 +600,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
                 result = (None, on_error(error, process), None)
             return result
 
-        def invoke_using_nothing():
+        def invoke_using_nothing(ignore):
             """ Invoke the program with nothing (no argument, no input).
 
             Return `(stdout, stderr, return_code)`.
