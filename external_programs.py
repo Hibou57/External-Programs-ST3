@@ -88,10 +88,16 @@ class BuildLikeCommand(sublime_plugin.WindowCommand):
             parts = os.path.split(file)
             directory = parts[0]
             filename = parts[1]
+
+            if not type(executable) is list:
+                executable = [executable]
+
+            executable.append(filename)
+
             self.window.run_command(
                 S_EXEC,
                 {
-                    S_CMD: [executable, filename],
+                    S_CMD: executable,
                     S_WORKING_DIR: directory,
                     S_FILE_REGEX: get_default_file_regex(),
                     })
@@ -598,6 +604,9 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
 
         timeout_delay = cls.get_timeout_delay()
 
+        if not type(executable) is list:
+            executable = [executable]
+
         # #### Exception handling
 
         def on_error(error, process):
@@ -639,7 +648,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             """
             try:
                 process = subprocess.Popen(
-                    [executable],
+                    executable,
                     cwd=directory,
                     universal_newlines=True,
                     stdin=subprocess.PIPE,
@@ -660,8 +669,10 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
 
             """
             try:
+                executable.append(text)
+
                 process = subprocess.Popen(
-                    [executable, text],
+                    executable,
                     cwd=directory,
                     universal_newlines=True,
                     stdin=None,
@@ -681,7 +692,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             """
             try:
                 process = subprocess.Popen(
-                    [executable],
+                    executable,
                     cwd=directory,
                     universal_newlines=True,
                     stdin=None,

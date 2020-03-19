@@ -104,6 +104,7 @@ Example usage from a `*.sublime-commands` file:
 	    "command": "external_program",
 	    "args": {
 	        "executable": "format-text",
+          // "executable": ["format-text", "--param", "value"],
 	        "source": "selected_text",
 	        "through": "stdin",
 	        "destination": "insert_replace",
@@ -114,7 +115,7 @@ Example usage from a `*.sublime-commands` file:
 Valid parameter values:
 
  * `destination`: [enum] `insert_replace` | `output_panel` | `nothing`;
- * `executable`: [string] name or path to the program;
+ * `executable`: [string|list] name or path to the program and optional args;
  * `panels`: [enum] `reset` (default) | `accumulate`;
  * `source`: [enum] `selected_text`|`file_name`|`file_uri`|`text_uri`|`nothing`;
  * `through`: [enum] `stdin` | `single_argument` | `nothing`.
@@ -188,6 +189,7 @@ Example usage from a `*.sublime-commands` file:
         "command": "build_like",
         "args": {
         	"executable": "multimarkdown-preview",
+          // "executable": ["format-text", "--param", "value"],
         	"file_regex": "^(.+):([0-9]+):() (.+)$",
         },
     }
