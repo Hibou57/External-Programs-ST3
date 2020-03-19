@@ -695,7 +695,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             # Core begin
             (result, stderr, return_code) = invoke(input)
             if return_code == 0:
-                output(result)
+                output(result or "[no output]")
             else:
                 sublime.status_message(
                     "Error: `%s` returned status %i"
