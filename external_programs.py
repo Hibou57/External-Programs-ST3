@@ -697,9 +697,10 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             if return_code == 0:
                 output(result or "[no output]")
             else:
-                sublime.status_message(
-                    "Error: `%s` returned status %i"
-                    % (executable, return_code))
+                if return_code is not None:
+                    sublime.status_message(
+                        "Error: %s returned status %i"
+                        % (executable, return_code))
 
             if stderr != "":
                 self.write_error(stderr)
