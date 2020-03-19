@@ -604,9 +604,6 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
 
         timeout_delay = cls.get_timeout_delay()
 
-        if not type(executable) is list:
-            executable = [executable]
-
         # #### Exception handling
 
         def on_error(error, process):
@@ -745,6 +742,14 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         directory = self.get_working_directory()
         # Parameters interpretation begin
         self.setup_panels(panels)
+
+        if not type(executable) is list:
+            executable = [executable]
+
+        # Expand special variables. See: http://www.sublimetext.com/docs/3/build_systems.html#variables
+        variables = self.view.window().extract_variables()
+        executable = [sublime.expand_variables(value, variables) for value in executable]
+
         input = self.get_input(source)
         invoke = self.get_invokation_method(executable, directory, through)
         output = self.get_output_method(destination, edit)

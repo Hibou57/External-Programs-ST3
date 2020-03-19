@@ -104,7 +104,7 @@ Example usage from a `*.sublime-commands` file:
 	    "command": "external_program",
 	    "args": {
 	        "executable": "format-text",
-          // "executable": ["format-text", "--param", "value"],
+          // "executable": ["format-text", "--file", "$file"],
 	        "source": "selected_text",
 	        "through": "stdin",
 	        "destination": "insert_replace",
@@ -121,6 +121,26 @@ Valid parameter values:
  * `through`: [enum] `stdin` | `single_argument` | `nothing`.
 
 All parameters but `panels` are required.
+
+If the `executable` parameter is a list, it may contain some variables. These are
+[the same variables](http://www.sublimetext.com/docs/3/build_systems.html#variables)
+that Sublime Text uses in its build system. See the list below:
+
+|       Variable       |                                     Description                                     |
+|----------------------|-------------------------------------------------------------------------------------|
+| `$packages`          | The path to the Packages/ folder                                                    |
+| `$platform`          | A string containing the platform Sublime Text is running on: `windows`, `osx` or `linux`. |
+| `$file`              | The full path, including folder, to the file in the active view.                    |
+| `$file_path`         | The path to the folder that contains the file in the active view.                   |
+| `$file_name`         | The file name (sans folder path) of the file in the active view.                    |
+| `$file_base_name`    | The file name, exluding the extension, of the file in the active view.              |
+| `$file_extension`    | The extension of the file name of the file in the active view.                      |
+| `$folder`            | The full path to the first folder open in the side bar.                             |
+| `$project`           | The full path to the current project file.                                          |
+| `$project_path`      | The path to the folder containing the current project file.                         |
+| `$project_name`      | The file name (sans folder path) of the current project file.                       |
+| `$project_base_name` | The file name, excluding the extension, of the current project file.                |
+| `$project_extension` | The extension of the current project file.                                          |
 
 When `panels` is `accumulate` means new content to the output and errors
 panels, is appended to their previous content.
