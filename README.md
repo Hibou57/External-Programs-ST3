@@ -96,10 +96,11 @@ Example usage from a `*.sublime-commands` file:
 	    "caption": "Text: Format",
 	    "command": "external_program",
 	    "args": {
-	        "executable": "format-text",
-          // "executable": ["format-text", "--file", "$file"],
 	        "source": "selected_text",
 	        "through": "stdin",
+          "executable": "format-text",
+          // "executable": ["format-text", "--file", "$file"],
+          "output": "stdout",
 	        "destination": "insert_replace",
 	        "panels": "reset"
 	    }
