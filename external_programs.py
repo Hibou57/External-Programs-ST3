@@ -822,6 +822,12 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         variables = self.view.window().extract_variables()
         executable = [sublime.expand_variables(value, variables) for value in executable]
 
+        if source is None:
+            through = None
+
+        if destination is None:
+            output = None
+
         input = self.get_input(source)
         invoke_method = self.get_invokation_method(executable, directory, through, output, destination)
         output_method = self.get_output_method(destination, edit)
