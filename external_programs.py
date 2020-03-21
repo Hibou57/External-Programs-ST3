@@ -785,6 +785,13 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
 
         return result
 
+    def selection_exists(self):
+        for region in self.view.sel():
+            if not region.empty():
+                return True
+
+        return False
+
     # Main
     # ------------------------------------------------------------------------
 
@@ -826,6 +833,13 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             cls.BUSY = True
             # Core begin
             (result, stderr, return_code) = invoke(input)
+
+            # Sometimes commands may return an output with a trailing newline. If
+            # the input also has a trailing newline then we accept the one in the
+            # output, otherwise remove it.
+            if result is not None and not input.endswith("\n") and self.selection_exists():
+                result = result.rstrip("\n")
+
             if return_code == 0:
                 output(result or "[no output]")
             else:
