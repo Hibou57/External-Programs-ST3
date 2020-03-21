@@ -25,7 +25,7 @@ Provides `external_program`, a command to run an external program on, either:
 
  * the current file;
  * the file URI with/without character position/range fragment identifier;
- * the current selection;
+ * the current selection (or whole buffer if there is no selection);
  * nothing.
 
 Passes the data to the program via, either:
@@ -39,12 +39,14 @@ Writes back the result from the program taken from its standard output (or the
 temporary file, if desired), either:
 
  * inserted at the caret;
- * as a replacement of the selected text;
+ * as a replacement of the selected text (or whole buffer if there was no selection
+   in the first place);
  * to an output panel;
  * to a Sublime Text phantom;
  * to nothing.
 
-“Selection” means single selection, not multiple selections.
+“Selection” means single selection, not multiple selections. If there is no selection,
+the plugin takes the whole buffer, no matter it's saved to a file or not.
 
 In case of errors, messages are written to the status bar. If the invoked
 program sent text to its standard error stream, it will be displayed in an
@@ -166,8 +168,8 @@ temporary file (instead of `stdout`), set the `output` parameter to `temporary_f
 
 More on `source`:
 
- * `selected_text`: the selected text where the selection is not empty and not
-    a multiple selection;
+ * `selected_text`: the selected text where the selection is not
+    a multiple selection; if there is no selection, whole buffer is used;
  * `file_name`: the simple file name, that is, base name with extension (note
     the working directory is that of the file);
  * `file_uri`: URI with the `file:` protocol and an absolute path,

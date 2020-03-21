@@ -351,10 +351,11 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             sublime.status_message("Error: multiple selections")
         else:
             region = sel[0]
-            if region.a == region.b:  # Not `a >= b` (reversed region).
-                sublime.status_message("Error: empty selection")
-            else:
-                result = view.substr(region)
+
+            if region.a == region.b:
+                region = sublime.Region(0, view.size())
+
+            result = view.substr(region)
         return result
 
     def get_input(self, source):
@@ -386,7 +387,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
     # Output (how to write text returned by invoked program)
     # ------------------------------------------------------------------------
 
-    def get_insert_replace_writer(self, edit):
+    def get_insert_replace_writer(self, edit, source):
         """ Return a method to write to the current selection or `None`.
 
         If there is no selection or a multiple selection, additionally to
@@ -408,6 +409,10 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             sublime.status_message("Error: multiple selections")
         else:
             region = sel[0]
+
+            if region.a == region.b and source == S_SELECTED_TEXT:
+                region = sublime.Region(0, view.size())
+
             result = lambda text: view.replace(edit, region, text)
         return result
 
@@ -514,7 +519,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         result = lambda text: None
         return result
 
-    def get_output_method(self, destination, edit):
+    def get_output_method(self, source, destination, edit):
         """ Return the method to write the program result or `None`.
 
         If `destination` is unknown, additionally to returning `None`, display
@@ -527,7 +532,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         """
         result = None
         if destination == S_INSERT_REPLACE:
-            result = self.get_insert_replace_writer(edit)
+            result = self.get_insert_replace_writer(edit, source)
         elif destination == S_OUTPUT_PANEL:
             result = self.get_output_panel_writer()
         elif destination == S_PHANTOM:
@@ -830,7 +835,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
 
         input = self.get_input(source)
         invoke_method = self.get_invokation_method(executable, directory, through, output, destination)
-        output_method = self.get_output_method(destination, edit)
+        output_method = self.get_output_method(source, destination, edit)
         # Parameters interpretation end
         if cls.BUSY:
             sublime.status_message("Error: busy")
