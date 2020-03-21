@@ -823,15 +823,15 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         executable = [sublime.expand_variables(value, variables) for value in executable]
 
         input = self.get_input(source)
-        invoke = self.get_invokation_method(executable, directory, through, output, destination)
-        output = self.get_output_method(destination, edit)
+        invoke_method = self.get_invokation_method(executable, directory, through, output, destination)
+        output_method = self.get_output_method(destination, edit)
         # Parameters interpretation end
         if cls.BUSY:
             sublime.status_message("Error: busy")
-        elif None not in [input, invoke, output]:
+        elif None not in [input, invoke_method, output_method]:
             cls.BUSY = True
             # Core begin
-            (result, stderr, return_code) = invoke(input)
+            (result, stderr, return_code) = invoke_method(input)
 
             # Sometimes commands may return an output with a trailing newline. If
             # the input also has a trailing newline then we accept the one in the
@@ -840,7 +840,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
                 result = result.rstrip("\n")
 
             if return_code == 0:
-                output(result or "[no output]")
+                output_method(result or "[no output]")
             else:
                 if return_code is not None:
                     sublime.status_message(
