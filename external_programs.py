@@ -21,6 +21,7 @@ import subprocess
 import urllib.parse
 import html
 import random
+import tempfile
 
 
 PREFERENCES_FILE = "Preferences.sublime-settings"
@@ -99,6 +100,7 @@ S_PHANTOM = "phantom"
 S_RESET = "reset"
 S_SELECTED_TEXT = "selected_text"
 S_SINGLE_ARGUMENT = "single_argument"
+S_TEMPORARY_FILE = "temporary_file"
 S_STDIN = "stdin"
 S_TEXT_URI = "text_uri"
 S_TIMEOUT_DELAY = "timeout_delay"
@@ -567,7 +569,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
     # ### Main
 
     @classmethod
-    def get_invokation_method(cls, executable, directory, through, destination):
+    def get_invokation_method(cls, executable, directory, through, output, destination):
         """ Return the method to invoke the program or `None`.
 
         If `through` is unknown, additionally to returning `None`, display an
@@ -683,6 +685,58 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
                 result = (None, on_error(error, process), None)
             return result
 
+        def invoke_using_temporary_file(text):
+            """ Save the `text` to a temporary file and invoke the program with its
+            path passed as a single argument.
+
+            Return `(output_text, stderr, return_code)`.
+
+            """
+            try:
+                with tempfile.NamedTemporaryFile(mode = "w+", dir = sublime.packages_path(), prefix = "external-programs-", suffix = ".temp", delete = False, encoding = "utf-8", newline = "") as file:
+                    file.write(text)
+                    file.close()
+
+                    executable.append(file.name)
+
+                    print("Executing: %s" % executable)
+
+                    process = subprocess.Popen(
+                        executable,
+                        cwd = directory,
+                        universal_newlines = True,
+                        shell = True,
+                        stdin = None,
+                        stdout = None if destination == "nothing" else subprocess.PIPE,
+                        stderr = None if destination == "nothing" else subprocess.PIPE)
+
+                    if destination != "nothing":
+                        (stdout, stderr) = process.communicate(timeout = timeout_delay)
+
+                        if output == "temporary_file":
+                            output_text = open(file.name, "r", encoding = "utf-8", newline = "").read()
+
+                            if stdout:
+                                print(stdout)
+
+                        else:
+                            output_text = stdout
+
+                        result = (output_text, stderr, process.returncode)
+
+                    else:
+                        # It's probably a GUI application. We're not interested in the output.
+                        result = ("", "", 0)
+
+            except Exception as error:  # pylint: disable=broad-except
+                result = (None, on_error(error, process), None)
+
+            finally:
+                if os.path.isfile(file.name):
+                    os.unlink(file.name)
+
+            return result
+
         def invoke_using_nothing(ignore):
             """ Invoke the program with nothing (no argument, no input).
 
@@ -719,6 +773,8 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             result = invoke_using_stdin
         elif through == S_SINGLE_ARGUMENT:
             result = invoke_using_single_argument
+        elif through == S_TEMPORARY_FILE:
+            result = invoke_using_temporary_file
         elif through == S_NOTHING:
             result = invoke_using_nothing
         else:
@@ -737,6 +793,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             executable,
             source="nothing",
             through="nothing",
+            output = "stdout",
             destination="nothing",
             panels=S_RESET):
 
@@ -760,7 +817,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         executable = [sublime.expand_variables(value, variables) for value in executable]
 
         input = self.get_input(source)
-        invoke = self.get_invokation_method(executable, directory, through, destination)
+        invoke = self.get_invokation_method(executable, directory, through, output, destination)
         output = self.get_output_method(destination, edit)
         # Parameters interpretation end
         if cls.BUSY:

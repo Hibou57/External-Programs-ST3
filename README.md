@@ -32,10 +32,11 @@ Passes the data to the program via, either:
 
  * a single argument;
  * its standard input stream;
+ * a temporary file;
  * nothing (makes sense when the argument is nothing).
 
-Writes back the result from the program taken from its standard output,
-either:
+Writes back the result from the program taken from its standard output (or the
+temporary file, if desired), either:
 
  * inserted at the caret;
  * as a replacement of the selected text;
@@ -108,9 +109,10 @@ Valid parameter values:
 
  * `destination`: [enum] `insert_replace` | `output_panel` | `phantom` | `nothing` (default);
  * `executable`: [string|list] name or path to the program and optional args;
+ * `output`: [enum] `stdout` (default) | `temporary_file`.
  * `panels`: [enum] `reset` (default) | `accumulate`;
  * `source`: [enum] `selected_text`|`file_name`|`file_uri`|`text_uri`|`nothing` (default);
- * `through`: [enum] `stdin` | `single_argument` | `nothing` (default).
+ * `through`: [enum] `stdin` | `single_argument` | `temporary_file` | `nothing` (default).
 
 Only `executable` parameter is required.
 
@@ -141,6 +143,13 @@ is expected to run for a long time.
 
 When `panels` is `accumulate` means new content to the output and errors
 panels, is appended to their previous content.
+
+As for the `through` parameter, `temporary_file` option is useful when sending a
+selection string to a command which only accepts a file argument and doesn't support
+`stdin`. It saves the selection to a temporary file (located in the `Packages` folder)
+and then sends its path to the command as an argument. After the execution is completed,
+temporary file is deleted automatically. If you want to read the output from the same
+temporary file (instead of `stdout`), set the `output` parameter to `temporary_file`.
 
 More on `source`:
 
