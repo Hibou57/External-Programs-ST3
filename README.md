@@ -107,14 +107,15 @@ Example usage from a `*.sublime-commands` file:
 
 Valid parameter values:
 
- * `destination`: [enum] `insert_replace` | `output_panel` | `phantom` | `nothing` (default);
+ * `destination`: [enum] `insert_replace` | `output_panel` | `phantom`;
  * `executable`: [string|list] name or path to the program and optional args;
  * `output`: [enum] `stdout` (default) | `temporary_file`.
  * `panels`: [enum] `reset` (default) | `accumulate`;
- * `source`: [enum] `selected_text`|`file_name`|`file_uri`|`text_uri`|`nothing` (default);
- * `through`: [enum] `stdin` | `single_argument` | `temporary_file` | `nothing` (default).
+ * `source`: [enum] `selected_text`|`file_name`|`file_uri`|`text_uri`;
+ * `through`: [enum] `stdin` | `single_argument` | `temporary_file`.
 
-Only `executable` parameter is required.
+Only `executable` parameter is required. If you omit a parameter that doesn't have a
+default value, that feature is not used.
 
 If the `executable` parameter is a list, it may contain some variables. These are
 [the same variables](http://www.sublimetext.com/docs/3/build_systems.html#variables)

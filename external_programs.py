@@ -56,17 +56,17 @@ SETTINGS = None  # Initialized by `plugin_loaded`
 # Parameter values are handled by:
 #
 #  * `get_insert_replace_writer`    for `destination:insert_replace`
-#  * `get_nothing_writer`           for `destination:nothing`
+#  * `get_nothing_writer`           for `destination` not set
 #  * `get_output_panel_writer`      for `destination:output_panel`
 #  * `get_phantom_writer`           for `destination:phantom`
 #  * `setup_panels` it-self         for `panels:accumulate`
 #  * `erase_view_content`           for `panels:reset`
 #  * `get_file_name`                for `source:file_name`
 #  * `get_file_uri`                 for `source:file_uri`
-#  * `get_input` it-self            for `source:nothing`
+#  * `get_input` it-self            for `source` not set
 #  * `get_selected_text`            for `source:selected_text`
 #  * `get_text_uri`                 for `source:text_uri`
-#  * `invoke_using_nothing`         for `though:nothing`
+#  * `invoke_using_nothing`         for `though` not set
 #  * `invoke_using_single_argument` for `though:single_argument`
 #  * `invoke_using_stdin`           for `though:stdin`
 
@@ -93,7 +93,6 @@ S_ERRORS_PANEL_NAME = "errors_panel_name"
 S_FILE_NAME = "file_name"
 S_FILE_URI = "file_uri"
 S_INSERT_REPLACE = "insert_replace"
-S_NOTHING = "nothing"
 S_OUTPUT_PANEL = "output_panel"
 S_OUTPUT_PANEL_NAME = "output_panel_name"
 S_PHANTOM = "phantom"
@@ -376,7 +375,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             result = self.get_file_uri()
         elif source == S_TEXT_URI:
             result = self.get_text_uri()
-        elif source == S_NOTHING:
+        elif source is None:
             result = ""
         else:
             sublime.status_message(
@@ -509,7 +508,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         The method returned expects a single `text` argument (which is
         ignored).
 
-        This is the method to be used when `destination` is `nothing`.
+        This is the method to be used when `destination` is not set.
 
         """
         result = lambda text: None
@@ -533,7 +532,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             result = self.get_output_panel_writer()
         elif destination == S_PHANTOM:
             result = self.get_phantom_writer()
-        elif destination == S_NOTHING:
+        elif destination is None:
             result = self.get_nothing_writer()
         else:
             sublime.status_message(
@@ -670,10 +669,10 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
                     universal_newlines=True,
                     shell=True,
                     stdin=None,
-                    stdout = None if destination == "nothing" else subprocess.PIPE,
-                    stderr = None if destination == "nothing" else subprocess.PIPE)
+                    stdout = None if destination is None else subprocess.PIPE,
+                    stderr = None if destination is None else subprocess.PIPE)
 
-                if destination != "nothing":
+                if destination is not None:
                     (stdout, stderr) = process.communicate(timeout=timeout_delay)
                     result = (stdout, stderr, process.returncode)
 
@@ -707,10 +706,10 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
                         universal_newlines = True,
                         shell = True,
                         stdin = None,
-                        stdout = None if destination == "nothing" else subprocess.PIPE,
-                        stderr = None if destination == "nothing" else subprocess.PIPE)
+                        stdout = None if destination is None else subprocess.PIPE,
+                        stderr = None if destination is None else subprocess.PIPE)
 
-                    if destination != "nothing":
+                    if destination is not None:
                         (stdout, stderr) = process.communicate(timeout = timeout_delay)
 
                         if output == "temporary_file":
@@ -752,10 +751,10 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
                     universal_newlines=True,
                     shell=True,
                     stdin=None,
-                    stdout = None if destination == "nothing" else subprocess.PIPE,
-                    stderr = None if destination == "nothing" else subprocess.PIPE)
+                    stdout = None if destination is None else subprocess.PIPE,
+                    stderr = None if destination is None else subprocess.PIPE)
 
-                if destination != "nothing":
+                if destination is not None:
                     (stdout, stderr) = process.communicate(timeout=timeout_delay)
                     result = (stdout, stderr, process.returncode)
 
@@ -775,7 +774,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             result = invoke_using_single_argument
         elif through == S_TEMPORARY_FILE:
             result = invoke_using_temporary_file
-        elif through == S_NOTHING:
+        elif through is None:
             result = invoke_using_nothing
         else:
             result = None
@@ -798,10 +797,10 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
     def run(self,
             edit,
             executable,
-            source="nothing",
-            through="nothing",
+            source = None,
+            through = None,
             output = "stdout",
-            destination="nothing",
+            destination = None,
             panels=S_RESET):
 
         """ Invoke `executable` as specified by the next three parameters.
