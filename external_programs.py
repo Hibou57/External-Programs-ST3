@@ -19,6 +19,8 @@ import sublime
 import sublime_plugin
 import subprocess
 import urllib.parse
+import html
+import random
 
 
 PREFERENCES_FILE = "Preferences.sublime-settings"
@@ -55,6 +57,7 @@ SETTINGS = None  # Initialized by `plugin_loaded`
 #  * `get_insert_replace_writer`    for `destination:insert_replace`
 #  * `get_nothing_writer`           for `destination:nothing`
 #  * `get_output_panel_writer`      for `destination:output_panel`
+#  * `get_phantom_writer`           for `destination:phantom`
 #  * `setup_panels` it-self         for `panels:accumulate`
 #  * `erase_view_content`           for `panels:reset`
 #  * `get_file_name`                for `source:file_name`
@@ -92,6 +95,7 @@ S_INSERT_REPLACE = "insert_replace"
 S_NOTHING = "nothing"
 S_OUTPUT_PANEL = "output_panel"
 S_OUTPUT_PANEL_NAME = "output_panel_name"
+S_PHANTOM = "phantom"
 S_RESET = "reset"
 S_SELECTED_TEXT = "selected_text"
 S_SINGLE_ARGUMENT = "single_argument"
@@ -427,6 +431,75 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         result = write_output
         return result
 
+    def get_phantom_writer(self):
+        """ Return a method to write to a phantom.
+
+        The method returned expects a single `text` argument.
+
+        This is the method to be used when `destination` is `phantom`.
+        """
+
+        def write_output(text):
+            """ Write `text` to a phantom. """
+
+            style = '''
+                <style>
+                    html.dark {
+                        background-color: var(--yellowish);
+                    }
+                    html.light {
+                        background-color: #88db7d;
+                    }
+                    body {
+                        padding-right: 1rem;
+
+                        color: black;
+                    }
+                    .hide {
+                        color: black;
+
+                        text-decoration: none;
+                    }
+                </style>
+            '''
+
+            html_content = (
+                "<body id='external-programs'>"
+                    + style
+                    + "<a class='hide' href='hide'>&nbsp;" + chr(0x00D7) + "&nbsp;</a>&nbsp;"
+                    + "<span class='command-output'>"
+                        + html.escape(text.strip()).replace("\n", "<br>")
+                    + "</span>"
+                + "</body>"
+            )
+
+            phantom_id = str(random.randrange(1, 1000000))
+            region_end = self.view.sel()[0].end()
+
+            self.view.add_phantom(
+                # Sublime Text Phantom API doesn't provide a native mechanism to
+                # hide a single phantom. In order to emulate that feature, we use
+                # unique keys as "phantom set" key for each phantom and later use
+                # that key to hide a particular phantom.
+                "external_programs/" + phantom_id,
+
+                # Make sure that the phantom is always displayed at the bottom of a
+                # multi-line selection.
+                sublime.Region(region_end, region_end),
+
+                html_content,
+                sublime.LAYOUT_BLOCK,
+                on_navigate = self.get_phantom_navigate_method(phantom_id))
+
+        return write_output
+
+    def get_phantom_navigate_method(self, phantom_id):
+        def on_phantom_navigate(url):
+            if url == "hide":
+                self.view.erase_phantoms("external_programs/" + phantom_id)
+
+        return on_phantom_navigate
+
     @staticmethod
     def get_nothing_writer():
         """ Return a method to write nothing.
@@ -456,6 +529,8 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             result = self.get_insert_replace_writer(edit)
         elif destination == S_OUTPUT_PANEL:
             result = self.get_output_panel_writer()
+        elif destination == S_PHANTOM:
+            result = self.get_phantom_writer()
         elif destination == S_NOTHING:
             result = self.get_nothing_writer()
         else:

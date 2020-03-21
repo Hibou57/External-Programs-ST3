@@ -40,6 +40,7 @@ either:
  * inserted at the caret;
  * as a replacement of the selected text;
  * to an output panel;
+ * to a Sublime Text phantom;
  * to nothing.
 
 “Selection” means single selection, not multiple selections.
@@ -105,7 +106,7 @@ Example usage from a `*.sublime-commands` file:
 
 Valid parameter values:
 
- * `destination`: [enum] `insert_replace` | `output_panel` | `nothing` (default);
+ * `destination`: [enum] `insert_replace` | `output_panel` | `phantom` | `nothing` (default);
  * `executable`: [string|list] name or path to the program and optional args;
  * `panels`: [enum] `reset` (default) | `accumulate`;
  * `source`: [enum] `selected_text`|`file_name`|`file_uri`|`text_uri`|`nothing` (default);
