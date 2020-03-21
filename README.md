@@ -105,14 +105,23 @@ Example usage from a `*.sublime-commands` file:
 	    }
 	}
 
-Valid parameter values:
+Main parameters and their options are shown in the below diagram:
 
- * `destination`: [enum] `insert_replace` | `output_panel` | `phantom`;
- * `executable`: [string|array] name or path to the program and optional args;
- * `output`: [enum] `stdout` (default) | `temporary_file`.
+```
+   "source"     -->     "through"      -->  "executable" (*) -->     "output"     -->  "destination"
+---------------     -----------------       ----------------     ----------------     ----------------
+"selected_text"          "stdin"              string|array         "stdout" (d)       "insert_replace"
+ "file_name"        "single_argument"                            "temporary_file"      "output_panel"
+  "file_uri"        "temporary_file"                                                     "phantom"
+  "text_uri"
+
+                                *: required
+                                d: default
+```
+
+And the additional parameters:
+
  * `panels`: [enum] `reset` (default) | `accumulate`;
- * `source`: [enum] `selected_text`|`file_name`|`file_uri`|`text_uri`;
- * `through`: [enum] `stdin` | `single_argument` | `temporary_file`.
 
 Only `executable` parameter is required. If you omit a parameter that doesn't have a
 default value, that feature is not used.
