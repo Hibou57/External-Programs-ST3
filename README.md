@@ -126,7 +126,9 @@ And the additional parameters:
 Only `executable` parameter is required. If you omit a parameter that doesn't have a
 default value, that feature is not used.
 
-If the `executable` parameter is an array, it may contain some variables. These are
+If there won't be any arguments for the `executable`, it can be represented as string.
+Otherwise it can be an array which contains all the arguments (see the example above). Also
+if the `executable` parameter is an array, it may contain some special variables. These are
 [the same variables](http://www.sublimetext.com/docs/3/build_systems.html#variables)
 that Sublime Text uses in its build system. See the list below:
 
