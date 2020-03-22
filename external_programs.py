@@ -621,7 +621,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
                 stderr = getattr(timeout, "stderr", "")
                 process.kill()
                 (_stdout, stderr_tail) = process.communicate()
-                stderr += stderr_tail
+                stderr += stderr_tail.decode("utf-8")
                 message = "Error: Command takes too long."
             except Exception as err:  # pylint: disable=bare-except
                 message = "Error while attempting to run command: " + repr(err)
@@ -644,14 +644,17 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
                 process = subprocess.Popen(
                     executable,
                     cwd=directory,
-                    universal_newlines=True,
                     shell=True,
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE)
                 (stdout, stderr) = process.communicate(
-                    input=text,
+                    input=text.encode("utf-8"),
                     timeout=timeout_delay)
+
+                stdout = stdout.decode("utf-8")
+                stderr = stderr.decode("utf-8")
+
                 result = (stdout, stderr, process.returncode)
             except Exception as error:  # pylint: disable=broad-except
                 result = (None, on_error(error, process), None)
@@ -671,7 +674,6 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
                 process = subprocess.Popen(
                     executable,
                     cwd=directory,
-                    universal_newlines=True,
                     shell=True,
                     stdin=None,
                     stdout = None if destination is None else subprocess.PIPE,
@@ -679,6 +681,9 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
 
                 if destination is not None:
                     (stdout, stderr) = process.communicate(timeout=timeout_delay)
+                    stdout = stdout.decode("utf-8")
+                    stderr = stderr.decode("utf-8")
+
                     result = (stdout, stderr, process.returncode)
 
                 else:
@@ -708,7 +713,6 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
                     process = subprocess.Popen(
                         executable,
                         cwd = directory,
-                        universal_newlines = True,
                         shell = True,
                         stdin = None,
                         stdout = None if destination is None else subprocess.PIPE,
@@ -716,6 +720,8 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
 
                     if destination is not None:
                         (stdout, stderr) = process.communicate(timeout = timeout_delay)
+                        stdout = stdout.decode("utf-8")
+                        stderr = stderr.decode("utf-8")
 
                         if output == "temporary_file":
                             output_text = open(file.name, "r", encoding = "utf-8", newline = "").read()
@@ -753,7 +759,6 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
                 process = subprocess.Popen(
                     executable,
                     cwd=directory,
-                    universal_newlines=True,
                     shell=True,
                     stdin=None,
                     stdout = None if destination is None else subprocess.PIPE,
@@ -761,6 +766,9 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
 
                 if destination is not None:
                     (stdout, stderr) = process.communicate(timeout=timeout_delay)
+                    stdout = stdout.decode("utf-8")
+                    stderr = stderr.decode("utf-8")
+
                     result = (stdout, stderr, process.returncode)
 
                 else:
