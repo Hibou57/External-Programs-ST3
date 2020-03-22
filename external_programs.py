@@ -875,6 +875,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
                 sublime.status_message(" ".join(messages));
 
             if stderr != "":
+                print(stderr)
                 self.write_error(stderr)
                 self.write_error("\n")
             # Core end
