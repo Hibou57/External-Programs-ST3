@@ -858,13 +858,10 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             if result is not None and not input.endswith("\n") and self.selection_exists():
                 result = result.rstrip("\n")
 
-            if return_code == 0:
-                output_method(result or "[no output]")
-            else:
-                if return_code is not None:
-                    sublime.status_message(
-                        "Error: %s returned status %i"
-                        % (executable, return_code))
+            output_method(result or "[no output]")
+
+            if return_code is not None:
+                sublime.status_message("Return code: %i" % return_code)
 
             if stderr != "":
                 self.write_error(stderr)
