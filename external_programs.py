@@ -263,7 +263,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             sublime.status_message("Error: multiple selections")
         else:
             region = sel[0]
-            if region.a == region.b:
+            if region.empty():
                 result = "#char=%i" % region.a
             else:
                 result = "#char=%i,%i" % (region.a, region.b)
@@ -352,7 +352,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         else:
             region = sel[0]
 
-            if region.a == region.b:
+            if region.empty():
                 region = sublime.Region(0, view.size())
 
             result = view.substr(region)
@@ -410,7 +410,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         else:
             region = sel[0]
 
-            if region.a == region.b and source == S_SELECTED_TEXT:
+            if region.empty() and source == S_SELECTED_TEXT:
                 region = sublime.Region(0, view.size())
 
             result = lambda text: view.replace(edit, region, text)
