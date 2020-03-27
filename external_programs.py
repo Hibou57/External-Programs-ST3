@@ -92,6 +92,10 @@ S_FILE_URI = "file_uri"
 S_INSERT_REPLACE = "insert_replace"
 S_OUTPUT_PANEL = "output_panel"
 S_OUTPUT_PANEL_NAME = "output_panel_name"
+S_PANEL_SYNTAX = "panel_syntax"
+S_PANEL_FILE_REGEX = "panel_file_regex"
+S_PANEL_LINE_REGEX = "panel_line_regex"
+S_PANEL_WORD_WRAP = "panel_word_wrap"
 S_PHANTOM = "phantom"
 S_RESET = "reset"
 S_SELECTED_TEXT = "selected_text"
@@ -137,6 +141,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         if cls.ERRORS_PANEL is None:
             window = self.view.window()
             cls.ERRORS_PANEL = window.create_output_panel(ERRORS_PANEL_NAME)
+            self.configure_panel(cls.ERRORS_PANEL)
 
         result = cls.ERRORS_PANEL
         return result
@@ -151,9 +156,25 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         if cls.OUTPUT_PANEL is None:
             window = self.view.window()
             cls.OUTPUT_PANEL = window.create_output_panel(OUTPUT_PANEL_NAME)
+            self.configure_panel(cls.OUTPUT_PANEL)
 
         result = cls.OUTPUT_PANEL
         return result
+
+    def configure_panel(self, panel):
+        if SETTINGS.get(S_PANEL_SYNTAX):
+            panel.assign_syntax(SETTINGS.get(S_PANEL_SYNTAX))
+
+        if SETTINGS.get(S_PANEL_FILE_REGEX):
+            panel.settings().set("result_file_regex", SETTINGS.get(S_PANEL_FILE_REGEX))
+
+        if SETTINGS.get(S_PANEL_LINE_REGEX):
+            panel.settings().set("result_line_regex", SETTINGS.get(S_PANEL_LINE_REGEX))
+
+        panel.settings().set("word_wrap", SETTINGS.get(S_PANEL_WORD_WRAP, True))
+        panel.settings().set("line_numbers", False)
+        panel.settings().set("gutter", False)
+        panel.settings().set("scroll_past_end", False)
 
     def write_error(self, text):
         """ Write `text` to the errors panel and shows it. """
