@@ -40,7 +40,6 @@ SETTINGS = None  # Initialized by `plugin_loaded`
 #
 #  * `ERRORS_PANEL_NAME`
 #  * `OUTPUT_PANEL_NAME`
-#  * `update_color_scheme`
 #  * `get_timeout_delay`
 #
 #
@@ -73,7 +72,6 @@ SETTINGS = None  # Initialized by `plugin_loaded`
 
 # Default when no settings found
 # ----------------------------------------------------------------------------
-DEFAULT_COLOR_SCHEME = None
 DEFAULT_ERRORS_PANEL_NAME = "errors"
 DEFAULT_OUTPUT_PANEL_NAME = "output"
 DEFAULT_TIMEOUT_DELAY = 3  # Seconds, not milliseconds.
@@ -81,7 +79,6 @@ DEFAULT_TIMEOUT_DELAY = 3  # Seconds, not milliseconds.
 # String constants from Sublime Text
 # ----------------------------------------------------------------------------
 S_CHARACTERS = "characters"
-S_COLOR_SCHEME = "color_scheme"
 S_INSERT = "insert"
 S_PANEL = "panel"
 S_SHOW_PANEL = "show_panel"
@@ -123,54 +120,10 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
     BUSY = False
     ERRORS_PANEL = None
     OUTPUT_PANEL = None
-    COLOR_SCHEME = None
-    COLOR_SCHEME_HANDLER_REGISTERED = False
 
     def __init__(self, arg2):
         """ Just invoke the parent class constructor. """
         super().__init__(arg2)
-
-    # Panels
-    # ------------------------------------------------------------------------
-
-    # ### Color scheme
-
-    @classmethod
-    def update_color_scheme(cls):
-        """ Set `COLOR_SCHEME` after preferences.
-
-        `COLOR_SCHEME` may still be `None`.
-
-        """
-        cls.COLOR_SCHEME = PREFERENCES.get(
-            S_COLOR_SCHEME,
-            DEFAULT_COLOR_SCHEME)
-
-    @classmethod
-    def set_panel_color_scheme(cls, panel):
-        """ Set panel color scheme to `COLOR_SCHEME`. """
-        if cls.COLOR_SCHEME is None:
-            cls.update_color_scheme()
-        if cls.COLOR_SCHEME is not None:
-            panel.settings().set(S_COLOR_SCHEME, cls.COLOR_SCHEME)
-
-    @classmethod
-    def on_color_scheme_changed(cls):
-        """ Invoke `update_color_scheme` and `set_panel_color_scheme`. """
-        cls.update_color_scheme()
-        if cls.ERRORS_PANEL is not None:
-            cls.set_panel_color_scheme(cls.ERRORS_PANEL)
-        if cls.OUTPUT_PANEL is not None:
-            cls.set_panel_color_scheme(cls.OUTPUT_PANEL)
-
-    @classmethod
-    def register_color_scheme_handler(cls):
-        """ Register `on_color_scheme_changed`. """
-        if not cls.COLOR_SCHEME_HANDLER_REGISTERED:
-            PREFERENCES.add_on_change(
-                S_COLOR_SCHEME,
-                cls.on_color_scheme_changed)
-            cls.COLOR_SCHEME_HANDLER_REGISTERED = True
 
     # ### Main
 
@@ -184,8 +137,6 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         if cls.ERRORS_PANEL is None:
             window = self.view.window()
             cls.ERRORS_PANEL = window.create_output_panel(ERRORS_PANEL_NAME)
-            self.set_panel_color_scheme(cls.ERRORS_PANEL)
-            self.register_color_scheme_handler()
 
         result = cls.ERRORS_PANEL
         return result
@@ -200,8 +151,6 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         if cls.OUTPUT_PANEL is None:
             window = self.view.window()
             cls.OUTPUT_PANEL = window.create_output_panel(OUTPUT_PANEL_NAME)
-            self.set_panel_color_scheme(cls.OUTPUT_PANEL)
-            self.register_color_scheme_handler()
 
         result = cls.OUTPUT_PANEL
         return result
