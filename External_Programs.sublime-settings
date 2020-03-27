@@ -1,5 +1,5 @@
 {
-    "timeout_delay": 3,
+    "timeout_delay": 10,
     "output_panel_name": "output",
     "errors_panel_name": "errors",
 
