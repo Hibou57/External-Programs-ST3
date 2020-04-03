@@ -152,13 +152,12 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         The panel is created on the first invocation.
 
         """
-        cls = type(self)
-        if cls.OUTPUT_PANEL is None:
+        if self.OUTPUT_PANEL is None:
             window = self.view.window()
-            cls.OUTPUT_PANEL = window.create_output_panel(OUTPUT_PANEL_NAME)
-            self.configure_panel(cls.OUTPUT_PANEL)
+            self.OUTPUT_PANEL = window.create_output_panel(OUTPUT_PANEL_NAME)
+            self.configure_panel(self.OUTPUT_PANEL)
 
-        result = cls.OUTPUT_PANEL
+        result = self.OUTPUT_PANEL
         return result
 
     def configure_panel(self, panel):
