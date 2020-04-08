@@ -123,6 +123,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
     """
 
     BUSY = False
+    DESTINATION = None
     ERRORS_PANEL = None
     OUTPUT_PANEL = None
 
@@ -816,6 +817,8 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         if destination is None:
             output = None
 
+        cls.DESTINATION = destination
+
         input = self.get_input(source)
         invoke_method = self.get_invokation_method(executable, directory, through, output, destination)
         output_method = self.get_output_method(source, destination)
@@ -828,6 +831,10 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             # Core thread
             def thread():
                 (result, stderr, return_code) = invoke_method(input)
+
+                # Check if the program is aborted.
+                if not cls.BUSY:
+                    return
 
                 # Sometimes commands may return an output with a trailing newline. If
                 # the input also has a trailing newline then we accept the one in the
@@ -879,6 +886,26 @@ class RunExternalProgramCommand(sublime_plugin.TextCommand):
 
     def is_visible(self):
         return False
+
+class ExternalProgramListener(sublime_plugin.EventListener):
+    def abort_program(self):
+        if ExternalProgramCommand.BUSY:
+            ExternalProgramCommand.BUSY = False
+            sublime.status_message("Program aborted.");
+
+    def on_modified(self, view):
+        if ExternalProgramCommand.DESTINATION == "insert_replace":
+            self.abort_program()
+
+    def on_selection_modified(self, view):
+        if ExternalProgramCommand.DESTINATION == "insert_replace":
+            self.abort_program()
+
+    def on_close(self, view):
+        self.abort_program()
+
+    def __del__(self):
+        self.abort_program()
 
 # Helper commands
 # ----------------------------------------------------------------------------

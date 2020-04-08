@@ -156,6 +156,9 @@ parameter. If the `destination` is set, then the plugin waits for the command's 
 return code. This typically ends with a timeout error for a GUI application which
 is expected to run for a long time.
 
+When the `destination` is `insert_replace`, modifying selections or the buffer
+aborts the command to display results (actual program is not aborted).
+
 When `panels` is `accumulate` means new content to the output and errors
 panels, is appended to their previous content.
 
