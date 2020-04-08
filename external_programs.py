@@ -867,6 +867,24 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
 
             _thread.start_new_thread(thread, ())
 
+            # Source: https://github.com/greneholt/SublimeExternalCommand
+            def spin(size, i=0, addend=1):
+                if not cls.BUSY:
+                    self.view.erase_status("external_programs")
+                    return
+
+                before = i % size
+                after = (size - 1) - before
+                self.view.set_status("external_programs", "%s [%s=%s]" % (executable[0], " " * before, " " * after))
+                if not after:
+                    addend = -1
+                if not before:
+                    addend = 1
+                i += addend
+                sublime.set_timeout(lambda: spin(size, i, addend), 100)
+
+            spin(8)
+
     @staticmethod
     def description():
         """ Return a long sentence as a description. """
