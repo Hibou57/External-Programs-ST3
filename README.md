@@ -13,7 +13,6 @@ alternatives mentioned in [Rationals](#rationals).
  * [Summary](#summary)
  * [Installation](#installation)
  * [The `external_program` text command](#external_program)
- * [The `build_like` window command](#build_like)
  * [Rationals](#rationals)
  * [License](#license)
 
@@ -56,14 +55,6 @@ output panel: “External Program: Show Errors” and “External Program: Show
 Output”.
 
 External programs are executed *synchronously*.
-
-Additionally provides `build_like` a convenient work-around to run a program
-like in a build system, from `*.sublime-commands` files (where you add
-something to the command palette), with the active file name as an argument:
-the `$file` variable only exists for `*.sublime-build` files, not for
-`*.sublime-commands` files (where the variable is left literally as-is,
-not-expanded). This plug-in provides a way to work around this. This
-additional command is independent from the one described above.
 
 
 <a name="installation"></a>
@@ -179,54 +170,6 @@ panels exists before something was to be written to it.
 The panels are displayed using the color scheme after the corresponding
 Sublime Text preferences, and panels switch color scheme when this preference
 is changed.
-
-
-<a name="build_like"></a>
-
-The `build_like` window command
-------------------------------------------------------------------------------
-A window command to run an external command on a file, using `exec`, like from
-a build system, thus with output sent to the build result panel and its
-convenient error messages navigation and parsing.
-
-The build system allows to pass a `$file` argument to external programs
-invoked with `exec`. Defining a command using `exec` is possible from a
-`*.sublime-commands` file, but the `$file` variable is not available in this
-context (and is passed literally to the invoked program). That's the reason
-why this command exists: it invokes an external program though `exec`, passing
-it the active file name in the active window, even when used from a
-`*.sublime-commands` file.
-
-The file argument is passed implicitly, as the single argument to the
-external program.
-
-### Creating a command
-
-Example usage from a `*.sublime-commands` file:
-
-    {
-        "caption": "Markdown: Preview",
-        "command": "build_like",
-        "args": {
-        	"executable": "multimarkdown-preview",
-          // "executable": ["format-text", "--param", "value"],
-        	"file_regex": "^(.+):([0-9]+):() (.+)$",
-        },
-    }
-
-The only required argument to `build_like`, is the executable name or full
-path. The `file_regex` argument may be omitted, in which case it is taken from
-the `default_file_regex` setting (see “Preferences/Package Settings/External
-Programs”), or if this setting does not exist, the default
-`"^(.+):([0-9]+):()(.+)$"` is used.
-
-The active file name is passed to the program, as a simple name (base name
-with extension), and the program is executed from the directory owning the
-file.
-
-### Settings
-
-`default_file_regex`, as described above.
 
 
 <a name="rationals"></a>

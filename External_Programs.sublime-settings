@@ -1,5 +1,4 @@
 {
-    "default_file_regex": "^([^:\n]+):([0-9]+):(?:([0-9]+):)? (.+)$",
     "timeout_delay": 3,
     "output_panel_name": "output",
     "errors_panel_name": "errors",
