@@ -58,7 +58,7 @@ Two commands are available from the command palette, to show the errors and
 output panel: “External Program: Show Errors” and “External Program: Show
 Output”.
 
-External programs are executed *synchronously*.
+External programs are executed asynchronously.
 
 
 <a name="installation"></a>
@@ -206,7 +206,7 @@ is changed.
 
 Rationals
 ------------------------------------------------------------------------------
-The program invocation is purposely simple and executed synchronously. This
+The program invocation is purposely simple. This
 plug-in provides what I believe should be part of the core of an editor, and
 that's not the purpose of an editor to be another shell or to provide command
 line edition features (that's the purpose of plug-ins). So there never will be
@@ -222,7 +222,7 @@ allows the reuse of these commands from editor to editor, in a simple manner):
    [External REPL](https://packagecontrol.io/packages/External%20REPL) for
    this purpose.
  * If one needs to run external commands interactively, or possibly long
-   running process asynchronously, xe better use
+   running process asynchronously, there is also:
    [External Command](https://packagecontrol.io/packages/External%20Command).
  * If one needs fully-featured options, xe better use
    [Commando](https://packagecontrol.io/packages/Commando).

@@ -22,6 +22,7 @@ import urllib.parse
 import html
 import random
 import tempfile
+import _thread
 
 
 PREFERENCES_FILE = "Preferences.sublime-settings"
@@ -356,7 +357,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
     # Output (how to write text returned by invoked program)
     # ------------------------------------------------------------------------
 
-    def get_insert_replace_writer(self, edit, source):
+    def get_insert_replace_writer(self, source):
         """ Return a method to write to the current selection or `None`.
 
         If there is no selection or a multiple selection, additionally to
@@ -382,8 +383,13 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             if region.empty() and source == S_SELECTED_TEXT:
                 region = sublime.Region(0, view.size())
 
-            result = lambda text: view.replace(edit, region, text)
-        return result
+            def writer(text):
+                view.run_command("run_external_program", {
+                    "regions": [[region.begin(), region.end()]],
+                    "results": [text],
+                })
+
+        return writer
 
     def get_output_panel_writer(self):
         """ Return a method to write to the output panel.
@@ -488,7 +494,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         result = lambda text: None
         return result
 
-    def get_output_method(self, source, destination, edit):
+    def get_output_method(self, source, destination):
         """ Return the method to write the program result or `None`.
 
         If `destination` is unknown, additionally to returning `None`, display
@@ -501,7 +507,7 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         """
         result = None
         if destination == S_INSERT_REPLACE:
-            result = self.get_insert_replace_writer(edit, source)
+            result = self.get_insert_replace_writer(source)
         elif destination == S_OUTPUT_PANEL:
             result = self.get_output_panel_writer()
         elif destination == S_PHANTOM:
@@ -812,43 +818,47 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
 
         input = self.get_input(source)
         invoke_method = self.get_invokation_method(executable, directory, through, output, destination)
-        output_method = self.get_output_method(source, destination, edit)
+        output_method = self.get_output_method(source, destination)
         # Parameters interpretation end
         if cls.BUSY:
             sublime.status_message("Error: busy")
         elif None not in [input, invoke_method, output_method]:
             cls.BUSY = True
-            # Core begin
-            (result, stderr, return_code) = invoke_method(input)
 
-            # Sometimes commands may return an output with a trailing newline. If
-            # the input also has a trailing newline then we accept the one in the
-            # output, otherwise remove it.
-            if result is not None and not input.endswith("\n") and self.selection_exists():
-                result = result.rstrip("\n")
+            # Core thread
+            def thread():
+                (result, stderr, return_code) = invoke_method(input)
 
-            messages = []
+                # Sometimes commands may return an output with a trailing newline. If
+                # the input also has a trailing newline then we accept the one in the
+                # output, otherwise remove it.
+                if result is not None and not input.endswith("\n") and self.selection_exists():
+                    result = result.rstrip("\n")
 
-            if destination == "insert_replace":
-                if result:
-                    output_method(result)
+                messages = []
+
+                if destination == "insert_replace":
+                    if result:
+                        output_method(result)
+                    else:
+                        messages.append("Empty output.")
                 else:
-                    messages.append("Empty output.")
-            else:
-                output_method(result or "[no output]")
+                    output_method(result or "[no output]")
 
-            if return_code is not None:
-                messages.append("Return code: %i" % return_code)
+                if return_code is not None:
+                    messages.append("Return code: %i" % return_code)
 
-            if messages:
-                sublime.status_message(" ".join(messages));
+                if messages:
+                    sublime.status_message(" ".join(messages));
 
-            if stderr != "":
-                print(stderr)
-                self.write_error(stderr)
-                self.write_error("\n")
-            # Core end
-            cls.BUSY = False
+                if stderr != "":
+                    print(stderr)
+                    self.write_error(stderr)
+                    self.write_error("\n")
+
+                cls.BUSY = False
+
+            _thread.start_new_thread(thread, ())
 
     @staticmethod
     def description():
@@ -858,6 +868,17 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
             "selection on standard input and replace the current selection "
             "with what it writes on standard output.")
 
+# Helper command for putting the output of the external program back into the
+# buffer. This is needed beacuse of the usage of thread. Sublime Text doesn't
+# preserve `edit` object in a thread (such as `view.replace(edit, region, text)`),
+# because the main command is already completed.
+class RunExternalProgramCommand(sublime_plugin.TextCommand):
+    def run(self, edit, regions, results):
+        for region, result in zip(reversed(regions), reversed(results)):
+            self.view.replace(edit, sublime.Region(region[0], region[1]), result)
+
+    def is_visible(self):
+        return False
 
 # Helper commands
 # ----------------------------------------------------------------------------
