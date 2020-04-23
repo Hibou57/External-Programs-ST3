@@ -180,8 +180,13 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
     def write_error(self, text):
         """ Write `text` to the errors panel and shows it. """
         errors_panel = self.errors_panel()
+        errors_panel.run_command("run_external_program", {
+            "regions": [[errors_panel.size(), errors_panel.size()]], # this means appending
+            "results": [text],
+            "clear_selection": True,
+        })
+
         window = self.view.window()
-        errors_panel.run_command(S_INSERT, {S_CHARACTERS: text})
         window.run_command(
             S_SHOW_PANEL,
             {S_PANEL: "output.%s" % ERRORS_PANEL_NAME})
@@ -404,8 +409,13 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
         def write_output(text):
             """ Write `text` to the output panel and shows it. """
             output_panel = self.output_panel()
+            output_panel.run_command("run_external_program", {
+                "regions": [[output_panel.size(), output_panel.size()]], # this means appending
+                "results": [text],
+                "clear_selection": True,
+            })
+
             window = self.view.window()
-            output_panel.run_command(S_INSERT, {S_CHARACTERS: text})
             window.run_command(
                 S_SHOW_PANEL,
                 {S_PANEL: "output.%s" % OUTPUT_PANEL_NAME})
@@ -898,9 +908,12 @@ class ExternalProgramCommand(sublime_plugin.TextCommand):
 # preserve `edit` object in a thread (such as `view.replace(edit, region, text)`),
 # because the main command is already completed.
 class RunExternalProgramCommand(sublime_plugin.TextCommand):
-    def run(self, edit, regions, results):
+    def run(self, edit, regions, results, clear_selection=False):
         for region, result in zip(reversed(regions), reversed(results)):
             self.view.replace(edit, sublime.Region(region[0], region[1]), result)
+
+        if clear_selection:
+            self.view.sel().clear()
 
     def is_visible(self):
         return False
