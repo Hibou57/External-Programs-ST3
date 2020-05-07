@@ -13,6 +13,7 @@ file, which should match most common needs (example from the README file):
         "command": "external_program",
         "args": {
             "executable": "format-text",
+            // "executable": ["format-text", "--param", "value"],
             "source": "selected_text",
             "through": "stdin",
             "destination": "insert_replace",

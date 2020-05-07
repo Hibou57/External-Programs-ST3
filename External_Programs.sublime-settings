@@ -1,6 +1,19 @@
 {
-    "default_file_regex": "^([^:\n]+):([0-9]+):(?:([0-9]+):)? (.+)$",
-    "timeout_delay": 3,
+    "timeout_delay": 10,
     "output_panel_name": "output",
     "errors_panel_name": "errors",
+
+    // You can specify a custom syntax file for the output panel. If you want to
+    // define a color scheme, you can create a file with the same basename of the
+    // below setting (e.g. `Plain text (Windows).sublime-settings`) and define
+    // `"color_scheme": "Packages/foo/bar.tmTheme"` setting in it.
+    "panel_syntax": "Packages/Text/Plain text.tmLanguage",
+
+    "panel_word_wrap": true,
+
+    // This setting allows you to double click on a path string in the output panel
+    // and open that file. Below regex catches most of the Windows/Unix paths.
+    "panel_file_regex": "(?:^| |\"|'|\\(|\\[)((?:[A-Za-z]:)?[\\\\/][^\\s\"':\\(\\)\\[\\]]+)(?:(?:[\"']?\\s+on line |:)(\\d+)(?::(\\d+))?)?",
+
+    "panel_line_regex": "(\\d+):(\\d+)",
 }
